@@ -11,6 +11,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
 
 import com.homeservice.homeservice_server.config.SupabaseProperties;
+import com.homeservice.homeservice_server.dto.supabase.SupabaseLoginResponse;
 import com.homeservice.homeservice_server.dto.supabase.SupabaseRegisterResponse;
 import com.homeservice.homeservice_server.exception.BadRequestException;
 
@@ -19,7 +20,7 @@ public class SupabaseAuthClient {
 
     private final RestClient client;
 
-    public SupabaseAuthClient(SupabaseProperties supabaseProperties) {
+    private SupabaseAuthClient(SupabaseProperties supabaseProperties) {
         String baseUrl = normalizeBaseUrl(supabaseProperties.url());
         String apiKey = supabaseProperties.apiKey();
         if (baseUrl.isEmpty() || apiKey == null || apiKey.isBlank()) {
@@ -63,6 +64,28 @@ public class SupabaseAuthClient {
             throw mapSignUpFailure(e);
         } catch (IllegalArgumentException e) {
             throw new BadRequestException("Failed to create user. Please try again");
+        }
+    }
+
+    public SupabaseLoginResponse signIn(String email, String password) {
+        Map<String, String> body = Map.of(
+                "email", email,
+                "password", password);
+
+        try {
+            SupabaseLoginResponse response = client.post()
+                    .uri("/auth/v1/token?grant_type=password")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(body)
+                    .retrieve()
+                    .body(SupabaseLoginResponse.class);
+
+            if (response == null || response.accessToken() == null || response.accessToken().isBlank()) {
+                throw new BadRequestException("Invalid email or password");
+            }
+            return response;
+        } catch (RestClientResponseException e) {
+            throw new BadRequestException("Invalid email or password");
         }
     }
 

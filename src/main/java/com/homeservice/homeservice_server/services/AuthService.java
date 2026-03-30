@@ -5,6 +5,8 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.homeservice.homeservice_server.dto.auth.LoginRequest;
+import com.homeservice.homeservice_server.dto.auth.LoginResponse;
 import com.homeservice.homeservice_server.dto.auth.RegisterRequest;
 import com.homeservice.homeservice_server.entities.User;
 import com.homeservice.homeservice_server.enums.UserRole;
@@ -51,5 +53,14 @@ public class AuthService {
                 .build();
 
         userRepository.save(user);
+    }
+
+    public LoginResponse login(LoginRequest request) {
+        var supabaseResponse = supabaseAuthClient.signIn(request.getEmail(), request.getPassword());
+
+        return LoginResponse.builder()
+                .message("Login successful")
+                .accessToken(supabaseResponse.accessToken())
+                .build();
     }
 }
