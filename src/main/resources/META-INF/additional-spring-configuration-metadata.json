@@ -1,0 +1,44 @@
+{
+  "groups": [
+    {
+      "name": "supabase",
+      "type": "com.techup.spring_demo.config.SupabaseProperties"
+    },
+    {
+      "name": "jwt",
+      "type": "com.techup.spring_demo.config.JwtProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "supabase.url",
+      "type": "java.lang.String",
+      "sourceType": "com.techup.spring_demo.config.SupabaseProperties",
+      "description": "Supabase project URL."
+    },
+    {
+      "name": "supabase.bucket",
+      "type": "java.lang.String",
+      "sourceType": "com.techup.spring_demo.config.SupabaseProperties",
+      "description": "Supabase storage bucket name."
+    },
+    {
+      "name": "supabase.api-key",
+      "type": "java.lang.String",
+      "sourceType": "com.techup.spring_demo.config.SupabaseProperties",
+      "description": "Supabase API key used for storage access."
+    },
+    {
+      "name": "jwt.secret",
+      "type": "java.lang.String",
+      "sourceType": "com.techup.spring_demo.config.JwtProperties",
+      "description": "Secret key used to sign JWT tokens."
+    },
+    {
+      "name": "jwt.expiration",
+      "type": "java.lang.Long",
+      "sourceType": "com.techup.spring_demo.config.JwtProperties",
+      "description": "JWT expiration time in milliseconds."
+    }
+  ]
+}
