@@ -36,8 +36,7 @@ public enum UserRole {
     }
 
     /**
-     * JPA and Jackson: unknown non-null values throw (invalid DB row or strict
-     * JSON
+     * JPA and Jackson: unknown non-null values throw (invalid DB row or strict JSON
      * enum).
      */
     @JsonCreator

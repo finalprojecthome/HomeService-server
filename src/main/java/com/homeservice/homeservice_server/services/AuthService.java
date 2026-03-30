@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.homeservice.homeservice_server.dto.auth.GetUserResponse;
 import com.homeservice.homeservice_server.dto.auth.LoginRequest;
 import com.homeservice.homeservice_server.dto.auth.LoginResponse;
 import com.homeservice.homeservice_server.dto.auth.RegisterRequest;
@@ -22,11 +23,6 @@ public class AuthService {
     private final UserRepository userRepository;
     private final SupabaseAuthClient supabaseAuthClient;
 
-    /**
-     * Registers via Supabase Auth ({@code /auth/v1/signup}), then persists the app
-     * user with the
-     * same {@code user_id} as {@code auth.users.id}.
-     */
     @Transactional
     public void register(RegisterRequest request) {
         String phone = request.getPhone();
@@ -59,8 +55,25 @@ public class AuthService {
         var supabaseResponse = supabaseAuthClient.signIn(request.getEmail(), request.getPassword());
 
         return LoginResponse.builder()
-                .message("Login successful")
+                .message("Login successfully")
                 .accessToken(supabaseResponse.accessToken())
+                .build();
+    }
+
+    public GetUserResponse getUser(String accessToken) {
+        var supaUser = supabaseAuthClient.getUser(accessToken);
+
+        UUID userId = UUID.fromString(supaUser.id());
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BadRequestException("User not found"));
+
+        return GetUserResponse.builder()
+                .id(user.getUserId().toString())
+                .name(user.getName())
+                .phone(user.getPhone())
+                .email(user.getEmail())
+                .imgUrl(user.getImgUrl())
+                .role(user.getRole())
                 .build();
     }
 }

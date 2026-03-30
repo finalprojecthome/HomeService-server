@@ -11,6 +11,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
 
 import com.homeservice.homeservice_server.config.SupabaseProperties;
+import com.homeservice.homeservice_server.dto.supabase.SupabaseGetUserResponse;
 import com.homeservice.homeservice_server.dto.supabase.SupabaseLoginResponse;
 import com.homeservice.homeservice_server.dto.supabase.SupabaseRegisterResponse;
 import com.homeservice.homeservice_server.exception.BadRequestException;
@@ -35,11 +36,6 @@ public class SupabaseAuthClient {
                 .build();
     }
 
-    /**
-     * Calls Supabase GoTrue {@code POST /auth/v1/signup}.
-     *
-     * @return {@code auth.users.id} for the new user
-     */
     public UUID signUp(String email, String password) {
         Map<String, String> body = Map.of(
                 "email", email,
@@ -86,6 +82,23 @@ public class SupabaseAuthClient {
             return response;
         } catch (RestClientResponseException e) {
             throw new BadRequestException("Invalid email or password");
+        }
+    }
+
+    public SupabaseGetUserResponse getUser(String accessToken) {
+        try {
+            SupabaseGetUserResponse response = client.get()
+                    .uri("/auth/v1/user")
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                    .retrieve()
+                    .body(SupabaseGetUserResponse.class);
+
+            if (response == null || response.id() == null) {
+                throw new BadRequestException("Invalid token");
+            }
+            return response;
+        } catch (RestClientResponseException e) {
+            throw new BadRequestException("Invalid token");
         }
     }
 
