@@ -26,7 +26,7 @@ public class SupabaseAuthClient {
         String apiKey = supabaseProperties.apiKey();
         if (baseUrl.isEmpty() || apiKey == null || apiKey.isBlank()) {
             throw new IllegalStateException(
-                    "Configure supabase.url and supabase.api-key (anon or service role key).");
+                    "กรุณาตั้งค่า supabase.url และ supabase.api-key (anon หรือ service role key)");
         }
 
         this.client = RestClient.builder()
@@ -53,13 +53,13 @@ public class SupabaseAuthClient {
                     || response.user() == null
                     || response.user().id() == null
                     || response.user().id().isBlank()) {
-                throw new BadRequestException("Failed to create user. Please try again");
+                throw new BadRequestException("ไม่สามารถสร้างผู้ใช้งานได้ กรุณาลองใหม่อีกครั้ง");
             }
             return UUID.fromString(response.user().id());
         } catch (RestClientResponseException e) {
             throw mapSignUpFailure(e);
         } catch (IllegalArgumentException e) {
-            throw new BadRequestException("Failed to create user. Please try again");
+            throw new BadRequestException("ไม่สามารถสร้างผู้ใช้งานได้ กรุณาลองใหม่อีกครั้ง");
         }
     }
 
@@ -77,11 +77,11 @@ public class SupabaseAuthClient {
                     .body(SupabaseLoginResponse.class);
 
             if (response == null || response.accessToken() == null || response.accessToken().isBlank()) {
-                throw new BadRequestException("Invalid email or password");
+                throw new BadRequestException("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
             }
             return response;
         } catch (RestClientResponseException e) {
-            throw new BadRequestException("Invalid email or password");
+            throw new BadRequestException("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
         }
     }
 
@@ -94,11 +94,11 @@ public class SupabaseAuthClient {
                     .body(SupabaseGetUserResponse.class);
 
             if (response == null || response.id() == null) {
-                throw new BadRequestException("Invalid token");
+                throw new BadRequestException("โทเคนไม่ถูกต้อง");
             }
             return response;
         } catch (RestClientResponseException e) {
-            throw new BadRequestException("Invalid token");
+            throw new BadRequestException("โทเคนไม่ถูกต้อง");
         }
     }
 
@@ -109,10 +109,10 @@ public class SupabaseAuthClient {
             if (lower.contains("user_already_exists")
                     || lower.contains("user already registered")
                     || lower.contains("email address is already registered")) {
-                return new BadRequestException("User with this email already exists");
+                return new BadRequestException("มีผู้ใช้งานที่ใช้อีเมลนี้อยู่แล้ว");
             }
         }
-        return new BadRequestException("Failed to create user. Please try again");
+        return new BadRequestException("ไม่สามารถสร้างผู้ใช้งานได้ กรุณาลองใหม่อีกครั้ง");
     }
 
     private static String normalizeBaseUrl(String url) {

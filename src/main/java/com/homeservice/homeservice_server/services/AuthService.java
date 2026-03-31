@@ -29,11 +29,11 @@ public class AuthService {
         String email = request.getEmail();
 
         if (userRepository.existsByPhone(phone)) {
-            throw new BadRequestException("User with this phone number already exists");
+            throw new BadRequestException("มีผู้ใช้งานที่ใช้เบอร์โทรศัพท์นี้อยู่แล้ว");
         }
 
         if (userRepository.existsByEmail(email)) {
-            throw new BadRequestException("User with this email already exists");
+            throw new BadRequestException("มีผู้ใช้งานที่ใช้อีเมลนี้อยู่แล้ว");
         }
 
         UUID authUserId = supabaseAuthClient.signUp(email, request.getPassword());
@@ -55,7 +55,7 @@ public class AuthService {
         var supabaseResponse = supabaseAuthClient.signIn(request.getEmail(), request.getPassword());
 
         return LoginResponse.builder()
-                .message("Login successfully")
+                .message("เข้าสู่ระบบสำเร็จ")
                 .accessToken(supabaseResponse.accessToken())
                 .build();
     }
@@ -65,7 +65,7 @@ public class AuthService {
 
         UUID userId = UUID.fromString(supaUser.id());
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BadRequestException("User not found"));
+                .orElseThrow(() -> new BadRequestException("ไม่พบผู้ใช้งาน"));
 
         return GetUserResponse.builder()
                 .id(user.getUserId().toString())

@@ -8,11 +8,11 @@ import lombok.Data;
 @Data
 public class LoginRequest {
 
-    @NotBlank(message = "Email is required")
-    @Email(message = "Invalid email address")
+    @NotBlank(message = "กรุณากรอกอีเมล")
+    @Email(message = "รูปแบบอีเมลไม่ถูกต้อง")
     private String email;
 
-    @NotBlank(message = "Password is required")
-    @Size(min = 12, message = "Password must be at least 12 characters long")
+    @NotBlank(message = "กรุณากรอกรหัสผ่าน")
+    @Size(min = 12, message = "รหัสผ่านต้องมีอย่างน้อย 12 ตัวอักษร")
     private String password;
 }
