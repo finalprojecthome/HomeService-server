@@ -11,7 +11,8 @@ import com.homeservice.homeservice_server.dto.auth.LoginResponse;
 import com.homeservice.homeservice_server.dto.auth.RegisterRequest;
 import com.homeservice.homeservice_server.entities.User;
 import com.homeservice.homeservice_server.enums.UserRole;
-import com.homeservice.homeservice_server.exception.BadRequestException;
+import com.homeservice.homeservice_server.exception.ConflictException;
+import com.homeservice.homeservice_server.exception.NotFoundException;
 import com.homeservice.homeservice_server.repositories.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -29,11 +30,11 @@ public class AuthService {
         String email = request.getEmail();
 
         if (userRepository.existsByPhone(phone)) {
-            throw new BadRequestException("มีผู้ใช้งานที่ใช้เบอร์โทรศัพท์นี้อยู่แล้ว");
+            throw new ConflictException("มีผู้ใช้งานที่ใช้เบอร์โทรศัพท์นี้อยู่แล้ว");
         }
 
         if (userRepository.existsByEmail(email)) {
-            throw new BadRequestException("มีผู้ใช้งานที่ใช้อีเมลนี้อยู่แล้ว");
+            throw new ConflictException("มีผู้ใช้งานที่ใช้อีเมลนี้อยู่แล้ว");
         }
 
         UUID authUserId = supabaseAuthClient.signUp(email, request.getPassword());
@@ -65,7 +66,7 @@ public class AuthService {
 
         UUID userId = UUID.fromString(supaUser.id());
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BadRequestException("ไม่พบผู้ใช้งาน"));
+                .orElseThrow(() -> new NotFoundException("ไม่พบผู้ใช้งาน"));
 
         return GetUserResponse.builder()
                 .id(user.getUserId().toString())

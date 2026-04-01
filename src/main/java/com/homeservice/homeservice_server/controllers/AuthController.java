@@ -39,7 +39,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<Map<String, String>> register(@Valid @RequestBody RegisterRequest request) {
         authService.register(request);
-        return ResponseEntity.status(201).body(Map.of("message", "User registered successfully"));
+        return ResponseEntity.status(201).body(Map.of("message", "ลงทะเบียนสำเร็จ"));
     }
 
     @PostMapping("/login")

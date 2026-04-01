@@ -15,6 +15,8 @@ import com.homeservice.homeservice_server.dto.supabase.SupabaseGetUserResponse;
 import com.homeservice.homeservice_server.dto.supabase.SupabaseLoginResponse;
 import com.homeservice.homeservice_server.dto.supabase.SupabaseRegisterResponse;
 import com.homeservice.homeservice_server.exception.BadRequestException;
+import com.homeservice.homeservice_server.exception.ConflictException;
+import com.homeservice.homeservice_server.exception.UnauthorizedException;
 
 @Service
 public class SupabaseAuthClient {
@@ -77,11 +79,11 @@ public class SupabaseAuthClient {
                     .body(SupabaseLoginResponse.class);
 
             if (response == null || response.accessToken() == null || response.accessToken().isBlank()) {
-                throw new BadRequestException("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+                throw new UnauthorizedException("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
             }
             return response;
         } catch (RestClientResponseException e) {
-            throw new BadRequestException("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+            throw new UnauthorizedException("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
         }
     }
 
@@ -94,22 +96,22 @@ public class SupabaseAuthClient {
                     .body(SupabaseGetUserResponse.class);
 
             if (response == null || response.id() == null) {
-                throw new BadRequestException("โทเคนไม่ถูกต้อง");
+                throw new UnauthorizedException("โทเคนไม่ถูกต้อง");
             }
             return response;
         } catch (RestClientResponseException e) {
-            throw new BadRequestException("โทเคนไม่ถูกต้อง");
+            throw new UnauthorizedException("โทเคนไม่ถูกต้อง");
         }
     }
 
-    private BadRequestException mapSignUpFailure(RestClientResponseException e) {
+    private RuntimeException mapSignUpFailure(RestClientResponseException e) {
         String raw = e.getResponseBodyAsString(StandardCharsets.UTF_8);
         if (raw != null) {
             String lower = raw.toLowerCase();
             if (lower.contains("user_already_exists")
                     || lower.contains("user already registered")
                     || lower.contains("email address is already registered")) {
-                return new BadRequestException("มีผู้ใช้งานที่ใช้อีเมลนี้อยู่แล้ว");
+                return new ConflictException("มีผู้ใช้งานที่ใช้อีเมลนี้อยู่แล้ว");
             }
         }
         return new BadRequestException("ไม่สามารถสร้างผู้ใช้งานได้ กรุณาลองใหม่อีกครั้ง");
