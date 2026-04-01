@@ -7,6 +7,10 @@
     {
       "name": "jwt",
       "type": "com.techup.spring_demo.config.JwtProperties"
+    },
+    {
+      "name": "app.cors",
+      "type": "com.homeservice.homeservice_server.config.CorsProperties"
     }
   ],
   "properties": [
@@ -39,6 +43,12 @@
       "type": "java.lang.Long",
       "sourceType": "com.techup.spring_demo.config.JwtProperties",
       "description": "JWT expiration time in milliseconds."
+    },
+    {
+      "name": "app.cors.allowed-origins",
+      "type": "java.lang.String",
+      "sourceType": "com.homeservice.homeservice_server.config.CorsProperties",
+      "description": "Comma-separated list of allowed browser origins for CORS (e.g. Vue dev server and production frontend URLs)."
     }
   ]
 }
