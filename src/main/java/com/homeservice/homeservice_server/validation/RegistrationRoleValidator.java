@@ -15,12 +15,12 @@ public class RegistrationRoleValidator implements ConstraintValidator<Registrati
         UserRole parsed = UserRole.tryFromDb(value.trim());
         if (parsed == null) {
             context.disableDefaultConstraintViolation();
-            context.buildConstraintViolationWithTemplate("Invalid role").addConstraintViolation();
+            context.buildConstraintViolationWithTemplate("บทบาทไม่ถูกต้อง").addConstraintViolation();
             return false;
         }
         if (parsed == UserRole.ADMIN) {
             context.disableDefaultConstraintViolation();
-            context.buildConstraintViolationWithTemplate("Admin role cannot be registered")
+            context.buildConstraintViolationWithTemplate("ไม่สามารถสมัครด้วยบทบาทผู้ดูแลระบบได้")
                     .addConstraintViolation();
             return false;
         }

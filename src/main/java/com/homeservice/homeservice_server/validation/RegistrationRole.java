@@ -15,7 +15,7 @@ import jakarta.validation.Payload;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RegistrationRole {
 
-    String message() default "Invalid role";
+    String message() default "บทบาทไม่ถูกต้อง";
 
     Class<?>[] groups() default {};
 

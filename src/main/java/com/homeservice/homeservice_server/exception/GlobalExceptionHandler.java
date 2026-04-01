@@ -42,7 +42,7 @@ public class GlobalExceptionHandler {
         }
 
         Map<String, Object> body = new HashMap<>();
-        body.put("message", "Validation failed");
+        body.put("message", "ข้อมูลที่ส่งมาไม่ถูกต้อง");
         body.put("status", HttpStatus.BAD_REQUEST.value());
         body.put("errors", fieldErrors);
 
