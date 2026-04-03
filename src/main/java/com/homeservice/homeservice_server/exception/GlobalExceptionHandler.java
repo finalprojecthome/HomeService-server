@@ -24,6 +24,16 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiError(ex.getMessage()));
 	}
 
+	@ExceptionHandler(NotFoundException.class)
+	public ResponseEntity<ApiError> notFound(NotFoundException ex) {
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiError(ex.getMessage()));
+	}
+
+	@ExceptionHandler(ConflictException.class)
+	public ResponseEntity<ApiError> conflict(ConflictException ex) {
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiError(ex.getMessage()));
+	}
+
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ApiError> badRequest(MethodArgumentNotValidException ex) {
 		String message = "Validation failed";

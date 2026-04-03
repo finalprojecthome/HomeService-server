@@ -1,6 +1,7 @@
 package com.homeservice.homeservice_server;
 
 import com.homeservice.homeservice_server.config.AdminAuthProperties;
+import com.homeservice.homeservice_server.service.UserRoleNormalizationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -13,9 +14,14 @@ public class HomeserviceServerApplication {
 	private static final Logger log = LoggerFactory.getLogger(HomeserviceServerApplication.class);
 
 	private final AdminAuthProperties adminAuthProperties;
+	private final UserRoleNormalizationService userRoleNormalizationService;
 
-	public HomeserviceServerApplication(AdminAuthProperties adminAuthProperties) {
+	public HomeserviceServerApplication(
+			AdminAuthProperties adminAuthProperties,
+			UserRoleNormalizationService userRoleNormalizationService
+	) {
 		this.adminAuthProperties = adminAuthProperties;
+		this.userRoleNormalizationService = userRoleNormalizationService;
 	}
 
 	public static void main(String[] args) {
@@ -26,6 +32,10 @@ public class HomeserviceServerApplication {
 	public void logAdminRegistrationStatus() {
 		boolean enabled = adminAuthProperties.inviteCode() != null && !adminAuthProperties.inviteCode().isBlank();
 		log.info("Admin registration is {}", enabled ? "ENABLED" : "DISABLED");
+		int normalizedRows = userRoleNormalizationService.normalizeStoredRolesToLowercase();
+		if (normalizedRows > 0) {
+			log.info("Normalized {} user role value(s) to lowercase", normalizedRows);
+		}
 	}
 
 }

@@ -34,7 +34,7 @@ public class JwtService {
 				.subject(email)
 				.issuedAt(Date.from(now))
 				.expiration(Date.from(exp))
-				.claims(Map.of(ROLE_CLAIM, role.name()))
+				.claims(Map.of(ROLE_CLAIM, role.toExternalValue()))
 				.signWith(secretKey)
 				.compact();
 	}
@@ -56,7 +56,7 @@ public class JwtService {
 		if (raw == null) {
 			return null;
 		}
-		return UserRole.valueOf(raw.toString());
+		return UserRole.fromExternalValue(raw.toString());
 	}
 
 	private static SecretKey buildKey(String secret) {

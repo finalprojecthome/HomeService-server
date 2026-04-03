@@ -60,6 +60,11 @@ public class AdminAuthController {
 		String email = authentication.getName();
 		User user = userRepository.findByEmailIgnoreCase(email)
 				.orElseThrow(() -> new UnauthorizedException("Unauthenticated"));
-		return new AdminMeResponse(user.getUserId(), user.getEmail(), user.getName(), user.getRole());
+		return new AdminMeResponse(
+				user.getUserId(),
+				user.getEmail(),
+				user.getName(),
+				user.getRole().toExternalValue()
+		);
 	}
 }
