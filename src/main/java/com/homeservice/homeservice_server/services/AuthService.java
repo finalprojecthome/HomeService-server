@@ -9,10 +9,12 @@ import com.homeservice.homeservice_server.dto.auth.GetUserResponse;
 import com.homeservice.homeservice_server.dto.auth.LoginRequest;
 import com.homeservice.homeservice_server.dto.auth.LoginResponse;
 import com.homeservice.homeservice_server.dto.auth.RegisterRequest;
+import com.homeservice.homeservice_server.entities.Technician;
 import com.homeservice.homeservice_server.entities.User;
 import com.homeservice.homeservice_server.enums.UserRole;
 import com.homeservice.homeservice_server.exception.ConflictException;
 import com.homeservice.homeservice_server.exception.NotFoundException;
+import com.homeservice.homeservice_server.repositories.TechnicianRepository;
 import com.homeservice.homeservice_server.repositories.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final TechnicianRepository technicianRepository;
     private final SupabaseAuthClient supabaseAuthClient;
 
     @Transactional
@@ -49,7 +52,13 @@ public class AuthService {
                 .role(role)
                 .build();
 
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
+
+        if (role == UserRole.TECHNICIAN) {
+            technicianRepository.save(Technician.builder()
+                    .user(savedUser)
+                    .build());
+        }
     }
 
     public LoginResponse login(LoginRequest request) {
