@@ -1,10 +1,9 @@
 package com.homeservice.homeservice_server.config;
 
+import com.homeservice.homeservice_server.dto.supabase.SupabaseGetUserResponse;
 import com.homeservice.homeservice_server.entity.User;
-import com.homeservice.homeservice_server.entity.UserRole;
 import com.homeservice.homeservice_server.repository.UserRepository;
-import com.homeservice.homeservice_server.service.JwtService;
-import io.jsonwebtoken.Claims;
+import com.homeservice.homeservice_server.service.SupabaseAuthClient;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,15 +17,17 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Component
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
-	private final JwtService jwtService;
+public class SupabaseAuthenticationFilter extends OncePerRequestFilter {
+	private final SupabaseAuthClient supabaseAuthClient;
 	private final UserRepository userRepository;
 
-	public JwtAuthenticationFilter(JwtService jwtService, UserRepository userRepository) {
-		this.jwtService = jwtService;
+	public SupabaseAuthenticationFilter(SupabaseAuthClient supabaseAuthClient, UserRepository userRepository) {
+		this.supabaseAuthClient = supabaseAuthClient;
 		this.userRepository = userRepository;
 	}
 
@@ -49,25 +50,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		}
 
 		try {
-			Claims claims = jwtService.parseAndValidate(token);
-			String email = jwtService.extractEmail(claims);
-			UserRole role = jwtService.extractRole(claims);
-
-			if (email == null || role == null) {
+			SupabaseGetUserResponse supabaseUser = supabaseAuthClient.getUser(token);
+			if (supabaseUser.id() == null || supabaseUser.email() == null || supabaseUser.email().isBlank()) {
 				filterChain.doFilter(request, response);
 				return;
 			}
 
-			User user = userRepository.findByEmailIgnoreCase(email).orElse(null);
-			if (user == null || user.getRole() != role) {
-				filterChain.doFilter(request, response);
-				return;
+			UUID userId = UUID.fromString(supabaseUser.id());
+			User user = userRepository.findById(userId).orElse(null);
+			List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+			if (user != null && user.getRole() != null) {
+				authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
 			}
 
 			var auth = new UsernamePasswordAuthenticationToken(
-					email,
+					new SupabaseUserPrincipal(userId, supabaseUser.email()),
 					null,
-					List.of(new SimpleGrantedAuthority("ROLE_" + role.name()))
+					authorities
 			);
 			auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 			SecurityContextHolder.getContext().setAuthentication(auth);

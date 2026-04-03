@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record SupabaseRegisterResponse(
 		@JsonProperty("user") SupabaseAuthUser user) {
+		@JsonProperty("user") SupabaseAuthUser user) {
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public record SupabaseAuthUser(

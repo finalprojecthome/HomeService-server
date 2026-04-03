@@ -57,8 +57,11 @@ public class AdminCategoryController {
 
 	@DeleteMapping("/{categoryId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void delete(@PathVariable Integer categoryId) {
-		adminCategoryService.deleteCategory(categoryId);
+	public void delete(
+			@PathVariable Integer categoryId,
+			@RequestParam(defaultValue = "false") boolean force
+	) {
+		adminCategoryService.deleteCategory(categoryId, force);
 	}
 
 	@PutMapping("/reorder")

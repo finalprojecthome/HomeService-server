@@ -8,8 +8,6 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -23,15 +21,10 @@ import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
 @Configuration
 @EnableWebSecurity
-@EnableConfigurationProperties({JwtProperties.class, AdminAuthProperties.class})
+@EnableConfigurationProperties({SupabaseAuthProperties.class, AdminAuthProperties.class})
 public class SecurityConfig {
 	@Value("${app.cors.allowed-origins:http://localhost:5173,http://127.0.0.1:5173}")
 	private String allowedOrigins;
-
-	@Bean
-	public PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
 
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
@@ -52,7 +45,7 @@ public class SecurityConfig {
 	}
 
 	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
+	public SecurityFilterChain securityFilterChain(HttpSecurity http, SupabaseAuthenticationFilter supabaseAuthenticationFilter) throws Exception {
 		return http
 				.csrf(csrf -> csrf.disable())
 				.cors(Customizer.withDefaults())
@@ -66,7 +59,7 @@ public class SecurityConfig {
 						.requestMatchers("/api/admin/**").hasRole("ADMIN")
 						.anyRequest().permitAll()
 				)
-				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+				.addFilterBefore(supabaseAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 				.build();
 	}
 }

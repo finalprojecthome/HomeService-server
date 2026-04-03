@@ -93,10 +93,15 @@ public class AdminCategoryService {
 	}
 
 	@Transactional
-	public void deleteCategory(Integer categoryId) {
+	public void deleteCategory(Integer categoryId, boolean force) {
 		Category category = requireCategory(categoryId);
-		if (serviceItemRepository.existsByCategoryId(categoryId)) {
+		boolean isInUse = serviceItemRepository.existsByCategoryId(categoryId);
+		if (isInUse && !force) {
 			throw new ConflictException("Category cannot be deleted because it is in use");
+		}
+
+		if (isInUse) {
+			serviceItemRepository.deleteAllByCategoryId(categoryId);
 		}
 
 		adminCategoryRepository.delete(category);

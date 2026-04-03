@@ -1,10 +1,10 @@
 package com.homeservice.homeservice_server.controller;
 
+import com.homeservice.homeservice_server.config.SupabaseUserPrincipal;
 import com.homeservice.homeservice_server.dto.AdminLoginRequest;
 import com.homeservice.homeservice_server.dto.AdminMeResponse;
 import com.homeservice.homeservice_server.dto.AdminRegisterRequest;
 import com.homeservice.homeservice_server.dto.AuthResponse;
-import com.homeservice.homeservice_server.config.JwtProperties;
 import com.homeservice.homeservice_server.entity.User;
 import com.homeservice.homeservice_server.exception.UnauthorizedException;
 import com.homeservice.homeservice_server.repository.UserRepository;
@@ -22,43 +22,35 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminAuthController {
 	private final AdminAuthService adminAuthService;
 	private final UserRepository userRepository;
-	private final long jwtExpirationMs;
 
 	public AdminAuthController(
 			AdminAuthService adminAuthService,
-			UserRepository userRepository,
-			JwtProperties jwtProperties
+			UserRepository userRepository
 	) {
 		this.adminAuthService = adminAuthService;
 		this.userRepository = userRepository;
-		this.jwtExpirationMs = jwtProperties.expiration();
 	}
 
 	@PostMapping("/register")
 	public AuthResponse register(@Valid @RequestBody AdminRegisterRequest request) {
-		String token = adminAuthService.register(
+		return adminAuthService.register(
 				request.name(),
 				request.phone(),
 				request.email(),
 				request.password(),
 				request.inviteCode()
 		);
-		return new AuthResponse(token, "Bearer", jwtExpirationMs);
 	}
 
 	@PostMapping("/login")
 	public AuthResponse login(@Valid @RequestBody AdminLoginRequest request) {
-		String token = adminAuthService.login(request.email(), request.password());
-		return new AuthResponse(token, "Bearer", jwtExpirationMs);
+		return adminAuthService.login(request.email(), request.password());
 	}
 
 	@GetMapping("/me")
 	public AdminMeResponse me(Authentication authentication) {
-		if (authentication == null || authentication.getName() == null) {
-			throw new UnauthorizedException("Unauthenticated");
-		}
-		String email = authentication.getName();
-		User user = userRepository.findByEmailIgnoreCase(email)
+		SupabaseUserPrincipal principal = requirePrincipal(authentication);
+		User user = userRepository.findById(principal.userId())
 				.orElseThrow(() -> new UnauthorizedException("Unauthenticated"));
 		return new AdminMeResponse(
 				user.getUserId(),
@@ -66,5 +58,12 @@ public class AdminAuthController {
 				user.getName(),
 				user.getRole().toExternalValue()
 		);
+	}
+
+	private SupabaseUserPrincipal requirePrincipal(Authentication authentication) {
+		if (authentication == null || !(authentication.getPrincipal() instanceof SupabaseUserPrincipal principal)) {
+			throw new UnauthorizedException("Unauthenticated");
+		}
+		return principal;
 	}
 }

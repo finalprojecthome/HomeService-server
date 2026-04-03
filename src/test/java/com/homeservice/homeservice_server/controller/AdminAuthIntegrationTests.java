@@ -3,24 +3,25 @@ package com.homeservice.homeservice_server.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.homeservice.homeservice_server.dto.AdminLoginRequest;
 import com.homeservice.homeservice_server.dto.AdminRegisterRequest;
+import com.homeservice.homeservice_server.dto.supabase.SupabaseGetUserResponse;
+import com.homeservice.homeservice_server.dto.supabase.SupabaseLoginResponse;
 import com.homeservice.homeservice_server.repository.UserRepository;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
+import com.homeservice.homeservice_server.service.SupabaseAuthClient;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.web.FilterChainProxy;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -32,13 +33,13 @@ class AdminAuthIntegrationTests {
 
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
-	@org.springframework.beans.factory.annotation.Autowired
+	@Autowired
 	private UserRepository userRepository;
 
-	@Value("${jwt.secret}")
-	private String jwtSecret;
+	@MockitoBean
+	private SupabaseAuthClient supabaseAuthClient;
 
-	@org.springframework.beans.factory.annotation.Autowired
+	@Autowired
 	void setUp(WebApplicationContext context, FilterChainProxy springSecurityFilterChain) {
 		this.mockMvc = MockMvcBuilders.webAppContextSetup(context)
 				.addFilters(springSecurityFilterChain)
@@ -47,10 +48,13 @@ class AdminAuthIntegrationTests {
 
 	@Test
 	void register_wrongInvite_returns403() throws Exception {
+		String email = "admin1@example.com";
+		when(supabaseAuthClient.signUp(email, "password123")).thenReturn(UUID.randomUUID());
+
 		var payload = new AdminRegisterRequest(
 				"Admin",
 				"0999999999",
-				"admin1@example.com",
+				email,
 				"password123",
 				"wrong"
 		);
@@ -63,58 +67,66 @@ class AdminAuthIntegrationTests {
 
 	@Test
 	void register_then_accessProtectedEndpoint_withToken_ok() throws Exception {
+		UUID userId = UUID.randomUUID();
+		String email = "admin2@example.com";
+		String token = "supabase-token-1";
+
+		when(supabaseAuthClient.signUp(email, "password123")).thenReturn(userId);
+		when(supabaseAuthClient.signIn(email, "password123"))
+				.thenReturn(new SupabaseLoginResponse(token, "refresh-1", "bearer", 3600L));
+		when(supabaseAuthClient.getUser(token))
+				.thenReturn(new SupabaseGetUserResponse(userId.toString(), email));
+
 		var payload = new AdminRegisterRequest(
 				"Admin",
 				"0999999999",
-				"admin2@example.com",
-				"password123",
-				"test-invite"
-		);
-
-		String token = mockMvc.perform(post("/api/admin/auth/register")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(payload)))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.accessToken").isString())
-				.andReturn()
-				.getResponse()
-				.getContentAsString();
-
-		String accessToken = objectMapper.readTree(token).get("accessToken").asText();
-
-		mockMvc.perform(get("/api/admin/auth/me")
-						.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.role").value("admin"));
-
-		Claims claims = parseClaims(accessToken);
-		org.junit.jupiter.api.Assertions.assertEquals("admin", claims.get("role"));
-		org.junit.jupiter.api.Assertions.assertEquals(
-				"admin",
-				userRepository.findRawRoleByEmail("admin2@example.com")
-		);
-	}
-
-	@Test
-	void login_wrongPassword_returns401() throws Exception {
-		var registerPayload = new AdminRegisterRequest(
-				"Admin",
-				"0999999999",
-				"admin3@example.com",
+				email,
 				"password123",
 				"test-invite"
 		);
 
 		mockMvc.perform(post("/api/admin/auth/register")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(registerPayload)))
+						.content(objectMapper.writeValueAsString(payload)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.accessToken").value(token))
+				.andExpect(jsonPath("$.tokenType").value("bearer"));
+
+		mockMvc.perform(get("/api/admin/auth/me")
+						.header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.role").value("admin"));
+
+		org.junit.jupiter.api.Assertions.assertEquals("admin", userRepository.findRawRoleByEmail(email));
+	}
+
+	@Test
+	void login_wrongPassword_returns401() throws Exception {
+		String email = "admin3@example.com";
+		UUID userId = UUID.randomUUID();
+		when(supabaseAuthClient.signUp(email, "password123")).thenReturn(userId);
+		when(supabaseAuthClient.signIn(email, "password123"))
+				.thenReturn(new SupabaseLoginResponse("token-ok", "refresh-ok", "bearer", 3600L));
+		when(supabaseAuthClient.getUser("token-ok"))
+				.thenReturn(new SupabaseGetUserResponse(userId.toString(), email));
+
+		mockMvc.perform(post("/api/admin/auth/register")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(new AdminRegisterRequest(
+								"Admin",
+								"0999999999",
+								email,
+								"password123",
+								"test-invite"
+						))))
 				.andExpect(status().isOk());
 
-		var loginPayload = new AdminLoginRequest("admin3@example.com", "wrongpass123");
+		when(supabaseAuthClient.signIn(email, "wrongpass123"))
+				.thenThrow(new com.homeservice.homeservice_server.exception.UnauthorizedException("Invalid credentials"));
 
 		mockMvc.perform(post("/api/admin/auth/login")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(loginPayload)))
+						.content(objectMapper.writeValueAsString(new AdminLoginRequest(email, "wrongpass123"))))
 				.andExpect(status().isUnauthorized());
 	}
 
@@ -124,19 +136,13 @@ class AdminAuthIntegrationTests {
 				.andExpect(status().isUnauthorized());
 	}
 
-	private Claims parseClaims(String token) {
-		return Jwts.parser()
-				.verifyWith(buildKey(jwtSecret))
-				.build()
-				.parseSignedClaims(token)
-				.getPayload();
-	}
+	@Test
+	void protectedEndpoint_withUnknownUser_returns403() throws Exception {
+		when(supabaseAuthClient.getUser(anyString()))
+				.thenReturn(new SupabaseGetUserResponse(UUID.randomUUID().toString(), "unknown@example.com"));
 
-	private SecretKey buildKey(String secret) {
-		try {
-			return Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
-		} catch (IllegalArgumentException ignored) {
-			return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-		}
+		mockMvc.perform(get("/api/admin/auth/me")
+						.header(HttpHeaders.AUTHORIZATION, "Bearer unknown-token"))
+				.andExpect(status().isForbidden());
 	}
 }

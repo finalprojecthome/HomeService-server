@@ -3,9 +3,12 @@ package com.homeservice.homeservice_server.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.homeservice.homeservice_server.dto.AdminRegisterRequest;
+import com.homeservice.homeservice_server.dto.supabase.SupabaseGetUserResponse;
+import com.homeservice.homeservice_server.dto.supabase.SupabaseLoginResponse;
 import com.homeservice.homeservice_server.entity.ServiceItem;
 import com.homeservice.homeservice_server.repository.AdminCategoryRepository;
 import com.homeservice.homeservice_server.repository.ServiceItemRepository;
+import com.homeservice.homeservice_server.service.SupabaseAuthClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.web.FilterChainProxy;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -20,7 +24,9 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -40,6 +46,9 @@ class AdminCategoryIntegrationTests {
 
 	@Autowired
 	private ServiceItemRepository serviceItemRepository;
+
+	@MockitoBean
+	private SupabaseAuthClient supabaseAuthClient;
 
 	@Autowired
 	void setUp(WebApplicationContext context, FilterChainProxy springSecurityFilterChain) throws Exception {
@@ -135,6 +144,38 @@ class AdminCategoryIntegrationTests {
 	}
 
 	@Test
+	void deleteInUseCategory_withForceTrue_returns204AndRemovesServices() throws Exception {
+		Integer firstCategoryId = createCategory("Plumbing");
+		Integer secondCategoryId = createCategory("Cleaning");
+		Integer thirdCategoryId = createCategory("Electrical");
+		serviceItemRepository.save(new ServiceItem(1, secondCategoryId));
+		serviceItemRepository.save(new ServiceItem(2, secondCategoryId));
+
+		mockMvc.perform(delete("/api/admin/categories/{categoryId}", secondCategoryId)
+						.header(HttpHeaders.AUTHORIZATION, bearer())
+						.param("force", "true"))
+				.andExpect(status().isNoContent());
+
+		org.junit.jupiter.api.Assertions.assertEquals(
+				0L,
+				serviceItemRepository.countByCategoryId(secondCategoryId)
+		);
+
+		mockMvc.perform(get("/api/admin/categories")
+						.header(HttpHeaders.AUTHORIZATION, bearer()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.totalItems").value(2))
+				.andExpect(jsonPath("$.items[0].categoryId").value(firstCategoryId))
+				.andExpect(jsonPath("$.items[0].sortOrder").value(1))
+				.andExpect(jsonPath("$.items[1].categoryId").value(thirdCategoryId))
+				.andExpect(jsonPath("$.items[1].sortOrder").value(2));
+
+		mockMvc.perform(get("/api/admin/categories/{categoryId}", secondCategoryId)
+						.header(HttpHeaders.AUTHORIZATION, bearer()))
+				.andExpect(status().isNotFound());
+	}
+
+	@Test
 	void deleteUnusedCategory_returns204() throws Exception {
 		Integer categoryId = createCategory("Gardening");
 
@@ -220,23 +261,28 @@ class AdminCategoryIntegrationTests {
 	}
 
 	private String registerAdminAndGetToken() throws Exception {
-		var payload = new AdminRegisterRequest(
-				"Admin",
-				"0999999999",
-				"admin-category-" + System.nanoTime() + "@example.com",
-				"password123",
-				"test-invite"
-		);
+		UUID userId = UUID.randomUUID();
+		String email = "admin-category-" + System.nanoTime() + "@example.com";
+		String token = "supabase-admin-token-" + System.nanoTime();
 
-		String response = mockMvc.perform(post("/api/admin/auth/register")
+		when(supabaseAuthClient.signUp(email, "password123")).thenReturn(userId);
+		when(supabaseAuthClient.signIn(email, "password123"))
+				.thenReturn(new SupabaseLoginResponse(token, "refresh-admin", "bearer", 3600L));
+		when(supabaseAuthClient.getUser(token))
+				.thenReturn(new SupabaseGetUserResponse(userId.toString(), email));
+
+		mockMvc.perform(post("/api/admin/auth/register")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(payload)))
-				.andExpect(status().isOk())
-				.andReturn()
-				.getResponse()
-				.getContentAsString();
+						.content(objectMapper.writeValueAsString(new AdminRegisterRequest(
+								"Admin",
+								"0999999999",
+								email,
+								"password123",
+								"test-invite"
+						))))
+				.andExpect(status().isOk());
 
-		return objectMapper.readTree(response).get("accessToken").asText();
+		return token;
 	}
 
 	private String bearer() {

@@ -9,10 +9,6 @@ services:
         value: 8080
       - key: ADMIN_INVITE_CODE
         sync: false
-      - key: JWT_SECRET
-        sync: false
-      - key: JWT_EXPIRATION
-        value: 86400000
       - key: SPRING_DATASOURCE_URL
         sync: false
       - key: SPRING_DATASOURCE_USERNAME
