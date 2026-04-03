@@ -2,9 +2,8 @@ package com.homeservice.homeservice_server.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
@@ -39,7 +38,7 @@ public class User {
 	@Column(name = "img_url")
 	private String imgUrl;
 
-	@Enumerated(EnumType.STRING)
+	@Convert(converter = UserRoleConverter.class)
 	@Column(name = "role", nullable = false)
 	private UserRole role;
 

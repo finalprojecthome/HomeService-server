@@ -14,5 +14,4 @@ public class HomeserviceServerApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(HomeserviceServerApplication.class, args);
 	}
-
 }
