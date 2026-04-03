@@ -1,19 +1,17 @@
-package com.homeservice.homeservice_server.service;
+package com.homeservice.homeservice_server.services;
 
 import com.homeservice.homeservice_server.config.AdminAuthProperties;
 import com.homeservice.homeservice_server.dto.AuthResponse;
-import com.homeservice.homeservice_server.dto.AdminMeResponse;
 import com.homeservice.homeservice_server.dto.supabase.SupabaseLoginResponse;
-import com.homeservice.homeservice_server.entity.User;
-import com.homeservice.homeservice_server.entity.UserRole;
+import com.homeservice.homeservice_server.entities.User;
+import com.homeservice.homeservice_server.enums.UserRole;
 import com.homeservice.homeservice_server.exception.ForbiddenException;
 import com.homeservice.homeservice_server.exception.UnauthorizedException;
 import com.homeservice.homeservice_server.exception.ValidationException;
-import com.homeservice.homeservice_server.repository.UserRepository;
+import com.homeservice.homeservice_server.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -53,7 +51,7 @@ public class AdminAuthService {
 			throw new ValidationException("Password is required");
 		}
 
-		Optional<User> existingByEmail = userRepository.findByEmailIgnoreCase(normalizedEmail);
+		var existingByEmail = userRepository.findByEmailIgnoreCase(normalizedEmail);
 		UUID authUserId = supabaseAuthClient.signUp(normalizedEmail, password);
 
 		if (existingByEmail.isPresent() && !existingByEmail.get().getUserId().equals(authUserId)) {
@@ -100,9 +98,6 @@ public class AdminAuthService {
 				.email(email)
 				.imgUrl(existingUser.getImgUrl())
 				.role(UserRole.ADMIN)
-				.password(existingUser.getPassword())
-				.lastLoginAt(existingUser.getLastLoginAt())
-				.createdAt(existingUser.getCreatedAt())
 				.build();
 		userRepository.delete(existingUser);
 		userRepository.save(migrated);

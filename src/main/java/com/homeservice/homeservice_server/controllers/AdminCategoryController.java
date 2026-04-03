@@ -1,11 +1,11 @@
-package com.homeservice.homeservice_server.controller;
+package com.homeservice.homeservice_server.controllers;
 
 import com.homeservice.homeservice_server.dto.AdminCategoryCreateRequest;
 import com.homeservice.homeservice_server.dto.AdminCategoryPageResponse;
 import com.homeservice.homeservice_server.dto.AdminCategoryReorderRequest;
 import com.homeservice.homeservice_server.dto.AdminCategoryResponse;
 import com.homeservice.homeservice_server.dto.AdminCategoryUpdateRequest;
-import com.homeservice.homeservice_server.service.AdminCategoryService;
+import com.homeservice.homeservice_server.services.AdminCategoryService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;

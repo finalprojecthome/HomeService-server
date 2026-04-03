@@ -1,6 +1,6 @@
-package com.homeservice.homeservice_server.repository;
+package com.homeservice.homeservice_server.repositories;
 
-import com.homeservice.homeservice_server.entity.Category;
+import com.homeservice.homeservice_server.entities.Category;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,14 +1,14 @@
-package com.homeservice.homeservice_server.controller;
+package com.homeservice.homeservice_server.controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.homeservice.homeservice_server.dto.AdminRegisterRequest;
 import com.homeservice.homeservice_server.dto.supabase.SupabaseGetUserResponse;
 import com.homeservice.homeservice_server.dto.supabase.SupabaseLoginResponse;
-import com.homeservice.homeservice_server.entity.ServiceItem;
-import com.homeservice.homeservice_server.repository.AdminCategoryRepository;
-import com.homeservice.homeservice_server.repository.ServiceItemRepository;
-import com.homeservice.homeservice_server.service.SupabaseAuthClient;
+import com.homeservice.homeservice_server.entities.ServiceItem;
+import com.homeservice.homeservice_server.repositories.AdminCategoryRepository;
+import com.homeservice.homeservice_server.repositories.ServiceItemRepository;
+import com.homeservice.homeservice_server.services.SupabaseAuthClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -269,13 +269,13 @@ class AdminCategoryIntegrationTests {
 		when(supabaseAuthClient.signIn(email, "password123"))
 				.thenReturn(new SupabaseLoginResponse(token, "refresh-admin", "bearer", 3600L));
 		when(supabaseAuthClient.getUser(token))
-				.thenReturn(new SupabaseGetUserResponse(userId.toString(), email));
+				.thenReturn(new SupabaseGetUserResponse(userId.toString(), email, null));
 
 		mockMvc.perform(post("/api/admin/auth/register")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(objectMapper.writeValueAsString(new AdminRegisterRequest(
 								"Admin",
-								"0999999999",
+								uniquePhone(),
 								email,
 								"password123",
 								"test-invite"
@@ -287,6 +287,11 @@ class AdminCategoryIntegrationTests {
 
 	private String bearer() {
 		return "Bearer " + adminToken;
+	}
+
+	private String uniquePhone() {
+		long suffix = Math.floorMod(System.nanoTime(), 100_000_000L);
+		return String.format("09%08d", suffix);
 	}
 
 	private record NamePayload(String name) {

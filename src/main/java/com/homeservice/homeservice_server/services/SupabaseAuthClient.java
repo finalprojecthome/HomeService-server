@@ -23,7 +23,7 @@ public class SupabaseAuthClient {
 
     private final RestClient client;
 
-    private SupabaseAuthClient(SupabaseProperties supabaseProperties) {
+    public SupabaseAuthClient(SupabaseProperties supabaseProperties) {
         String baseUrl = normalizeBaseUrl(supabaseProperties.url());
         String apiKey = supabaseProperties.apiKey();
         if (baseUrl.isEmpty() || apiKey == null || apiKey.isBlank()) {

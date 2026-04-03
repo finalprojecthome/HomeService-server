@@ -1,6 +1,6 @@
-package com.homeservice.homeservice_server.repository;
+package com.homeservice.homeservice_server.repositories;
 
-import com.homeservice.homeservice_server.entity.ServiceItem;
+import com.homeservice.homeservice_server.entities.ServiceItem;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ServiceItemRepository extends JpaRepository<ServiceItem, Integer> {

@@ -21,7 +21,7 @@ import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
 @Configuration
 @EnableWebSecurity
-@EnableConfigurationProperties({SupabaseAuthProperties.class, AdminAuthProperties.class})
+@EnableConfigurationProperties({SupabaseProperties.class, AdminAuthProperties.class})
 public class SecurityConfig {
 	@Value("${app.cors.allowed-origins:http://localhost:5173,http://127.0.0.1:5173}")
 	private String allowedOrigins;

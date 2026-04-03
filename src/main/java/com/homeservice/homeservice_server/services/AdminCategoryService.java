@@ -1,13 +1,13 @@
-package com.homeservice.homeservice_server.service;
+package com.homeservice.homeservice_server.services;
 
 import com.homeservice.homeservice_server.dto.AdminCategoryPageResponse;
 import com.homeservice.homeservice_server.dto.AdminCategoryResponse;
-import com.homeservice.homeservice_server.entity.Category;
+import com.homeservice.homeservice_server.entities.Category;
 import com.homeservice.homeservice_server.exception.ConflictException;
 import com.homeservice.homeservice_server.exception.NotFoundException;
 import com.homeservice.homeservice_server.exception.ValidationException;
-import com.homeservice.homeservice_server.repository.AdminCategoryRepository;
-import com.homeservice.homeservice_server.repository.ServiceItemRepository;
+import com.homeservice.homeservice_server.repositories.AdminCategoryRepository;
+import com.homeservice.homeservice_server.repositories.ServiceItemRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

@@ -1,9 +1,9 @@
 package com.homeservice.homeservice_server.config;
 
 import com.homeservice.homeservice_server.dto.supabase.SupabaseGetUserResponse;
-import com.homeservice.homeservice_server.entity.User;
-import com.homeservice.homeservice_server.repository.UserRepository;
-import com.homeservice.homeservice_server.service.SupabaseAuthClient;
+import com.homeservice.homeservice_server.entities.User;
+import com.homeservice.homeservice_server.repositories.UserRepository;
+import com.homeservice.homeservice_server.services.SupabaseAuthClient;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

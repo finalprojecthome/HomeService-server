@@ -1,4 +1,4 @@
-package com.homeservice.homeservice_server.entity;
+package com.homeservice.homeservice_server.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

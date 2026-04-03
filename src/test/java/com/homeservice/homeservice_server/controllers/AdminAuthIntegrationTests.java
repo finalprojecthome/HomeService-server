@@ -1,12 +1,12 @@
-package com.homeservice.homeservice_server.controller;
+package com.homeservice.homeservice_server.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.homeservice.homeservice_server.dto.AdminLoginRequest;
 import com.homeservice.homeservice_server.dto.AdminRegisterRequest;
 import com.homeservice.homeservice_server.dto.supabase.SupabaseGetUserResponse;
 import com.homeservice.homeservice_server.dto.supabase.SupabaseLoginResponse;
-import com.homeservice.homeservice_server.repository.UserRepository;
-import com.homeservice.homeservice_server.service.SupabaseAuthClient;
+import com.homeservice.homeservice_server.repositories.UserRepository;
+import com.homeservice.homeservice_server.services.SupabaseAuthClient;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,6 +19,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.util.UUID;
+
+import org.junit.jupiter.api.BeforeEach;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -39,6 +41,11 @@ class AdminAuthIntegrationTests {
 	@MockitoBean
 	private SupabaseAuthClient supabaseAuthClient;
 
+	@BeforeEach
+	void resetData() {
+		userRepository.deleteAll();
+	}
+
 	@Autowired
 	void setUp(WebApplicationContext context, FilterChainProxy springSecurityFilterChain) {
 		this.mockMvc = MockMvcBuilders.webAppContextSetup(context)
@@ -53,7 +60,7 @@ class AdminAuthIntegrationTests {
 
 		var payload = new AdminRegisterRequest(
 				"Admin",
-				"0999999999",
+				uniquePhone(),
 				email,
 				"password123",
 				"wrong"
@@ -75,11 +82,11 @@ class AdminAuthIntegrationTests {
 		when(supabaseAuthClient.signIn(email, "password123"))
 				.thenReturn(new SupabaseLoginResponse(token, "refresh-1", "bearer", 3600L));
 		when(supabaseAuthClient.getUser(token))
-				.thenReturn(new SupabaseGetUserResponse(userId.toString(), email));
+				.thenReturn(new SupabaseGetUserResponse(userId.toString(), email, null));
 
 		var payload = new AdminRegisterRequest(
 				"Admin",
-				"0999999999",
+				uniquePhone(),
 				email,
 				"password123",
 				"test-invite"
@@ -108,13 +115,13 @@ class AdminAuthIntegrationTests {
 		when(supabaseAuthClient.signIn(email, "password123"))
 				.thenReturn(new SupabaseLoginResponse("token-ok", "refresh-ok", "bearer", 3600L));
 		when(supabaseAuthClient.getUser("token-ok"))
-				.thenReturn(new SupabaseGetUserResponse(userId.toString(), email));
+				.thenReturn(new SupabaseGetUserResponse(userId.toString(), email, null));
 
 		mockMvc.perform(post("/api/admin/auth/register")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(objectMapper.writeValueAsString(new AdminRegisterRequest(
 								"Admin",
-								"0999999999",
+								uniquePhone(),
 								email,
 								"password123",
 								"test-invite"
@@ -139,10 +146,15 @@ class AdminAuthIntegrationTests {
 	@Test
 	void protectedEndpoint_withUnknownUser_returns403() throws Exception {
 		when(supabaseAuthClient.getUser(anyString()))
-				.thenReturn(new SupabaseGetUserResponse(UUID.randomUUID().toString(), "unknown@example.com"));
+				.thenReturn(new SupabaseGetUserResponse(UUID.randomUUID().toString(), "unknown@example.com", null));
 
 		mockMvc.perform(get("/api/admin/auth/me")
 						.header(HttpHeaders.AUTHORIZATION, "Bearer unknown-token"))
 				.andExpect(status().isForbidden());
+	}
+
+	private String uniquePhone() {
+		long suffix = Math.floorMod(System.nanoTime(), 100_000_000L);
+		return String.format("09%08d", suffix);
 	}
 }

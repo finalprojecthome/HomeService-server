@@ -1,14 +1,14 @@
-package com.homeservice.homeservice_server.controller;
+package com.homeservice.homeservice_server.controllers;
 
 import com.homeservice.homeservice_server.config.SupabaseUserPrincipal;
 import com.homeservice.homeservice_server.dto.AdminLoginRequest;
 import com.homeservice.homeservice_server.dto.AdminMeResponse;
 import com.homeservice.homeservice_server.dto.AdminRegisterRequest;
 import com.homeservice.homeservice_server.dto.AuthResponse;
-import com.homeservice.homeservice_server.entity.User;
+import com.homeservice.homeservice_server.entities.User;
 import com.homeservice.homeservice_server.exception.UnauthorizedException;
-import com.homeservice.homeservice_server.repository.UserRepository;
-import com.homeservice.homeservice_server.service.AdminAuthService;
+import com.homeservice.homeservice_server.repositories.UserRepository;
+import com.homeservice.homeservice_server.services.AdminAuthService;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -56,7 +56,7 @@ public class AdminAuthController {
 				user.getUserId(),
 				user.getEmail(),
 				user.getName(),
-				user.getRole().toExternalValue()
+				user.getRole().getDbValue()
 		);
 	}
 
