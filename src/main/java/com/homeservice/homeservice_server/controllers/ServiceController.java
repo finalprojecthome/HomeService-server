@@ -17,7 +17,7 @@ public class ServiceController {
 
     private final SubServiceService subServiceService;
 
-    // 🔥 GET sub-services by serviceId
+
     @GetMapping("/{serviceId}/sub-services")
     public List<SubServiceResponse> getSubServices(@PathVariable Long serviceId) {
         return subServiceService.getSubServicesByServiceId(serviceId);

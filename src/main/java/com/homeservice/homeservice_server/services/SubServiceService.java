@@ -19,7 +19,7 @@ public class SubServiceService {
     private final SubServiceRepository subServiceRepository;
     private final ServiceRepository serviceRepository;
 
-    // 🔥 map Entity → DTO (เหมือน AddressService)
+
     private SubServiceResponse toSubServiceResponse(SubService subService) {
         return SubServiceResponse.builder()
                 .id(subService.getSubServiceId())
@@ -29,15 +29,15 @@ public class SubServiceService {
                 .build();
     }
 
-    // 🔥 main function
+
     public List<SubServiceResponse> getSubServicesByServiceId(Long serviceId) {
 
-        // ✅ check ว่ามี service นี้จริงมั้ย
+
         if (!serviceRepository.existsById(serviceId)) {
             throw new NotFoundException("ไม่พบบริการ");
         }
 
-        // ✅ query + map
+
         return subServiceRepository.findByService_ServiceId(serviceId)
                 .stream()
                 .map(this::toSubServiceResponse)
