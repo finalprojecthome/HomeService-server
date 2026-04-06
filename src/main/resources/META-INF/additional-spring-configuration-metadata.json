@@ -1,0 +1,48 @@
+{
+    "groups": [
+      {
+        "name": "supabase",
+        "type": "com.techup.spring_demo.config.SupabaseProperties"
+      },
+      {
+        "name": "app.cors",
+        "type": "com.homeservice.homeservice_server.config.CorsProperties"
+      },
+      {
+        "name": "admin",
+        "type": "com.homeservice.homeservice_server.config.AdminAuthProperties"
+      }
+    ],
+    "properties": [
+      {
+        "name": "supabase.url",
+        "type": "java.lang.String",
+        "sourceType": "com.techup.spring_demo.config.SupabaseProperties",
+        "description": "Supabase project URL."
+      },
+      {
+        "name": "supabase.bucket",
+        "type": "java.lang.String",
+        "sourceType": "com.techup.spring_demo.config.SupabaseProperties",
+        "description": "Supabase storage bucket name."
+      },
+      {
+        "name": "supabase.api-key",
+        "type": "java.lang.String",
+        "sourceType": "com.techup.spring_demo.config.SupabaseProperties",
+        "description": "Supabase API key used for storage access."
+      },
+      {
+        "name": "app.cors.allowed-origins",
+        "type": "java.lang.String",
+        "sourceType": "com.homeservice.homeservice_server.config.CorsProperties",
+        "description": "Comma-separated list of allowed browser origins for CORS (e.g. Vue dev server and production frontend URLs)."
+      },
+      {
+        "name": "admin.invite-code",
+        "type": "java.lang.String",
+        "sourceType": "com.homeservice.homeservice_server.config.AdminAuthProperties",
+        "description": "Invite code required for admin registration."
+      }
+    ]
+  }
