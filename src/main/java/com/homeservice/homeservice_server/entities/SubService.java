@@ -44,7 +44,7 @@ public class SubService {
 
     @NotNull
     @DecimalMin("0.00")
-    @Column(name = "price_per_unit", nullable = false, precision = 38, scale = 2)
+    @Column(name = "price_per_unit", nullable = false, precision = 7, scale = 2)
     private BigDecimal pricePerUnit;
 
     @NotNull
