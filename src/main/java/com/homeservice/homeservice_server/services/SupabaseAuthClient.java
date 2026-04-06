@@ -14,6 +14,7 @@ import com.homeservice.homeservice_server.config.SupabaseProperties;
 import com.homeservice.homeservice_server.dto.supabase.SupabaseGetUserResponse;
 import com.homeservice.homeservice_server.dto.supabase.SupabaseLoginResponse;
 import com.homeservice.homeservice_server.dto.supabase.SupabaseRegisterResponse;
+import com.homeservice.homeservice_server.dto.supabase.SupabaseResetPasswordResponse;
 import com.homeservice.homeservice_server.exception.BadRequestException;
 import com.homeservice.homeservice_server.exception.ConflictException;
 import com.homeservice.homeservice_server.exception.UnauthorizedException;
@@ -66,6 +67,10 @@ public class SupabaseAuthClient {
     }
 
     public SupabaseLoginResponse signIn(String email, String password) {
+        return signIn(email, password, false);
+    }
+
+    public SupabaseLoginResponse signIn(String email, String password, boolean isResetPassword) {
         Map<String, String> body = Map.of(
                 "email", email,
                 "password", password);
@@ -79,10 +84,16 @@ public class SupabaseAuthClient {
                     .body(SupabaseLoginResponse.class);
 
             if (response == null || response.accessToken() == null || response.accessToken().isBlank()) {
+                if (isResetPassword) {
+                    throw new UnauthorizedException("รหัสผ่านเก่าไม่ถูกต้อง");
+                }
                 throw new UnauthorizedException("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
             }
             return response;
         } catch (RestClientResponseException e) {
+            if (isResetPassword) {
+                throw new UnauthorizedException("รหัสผ่านเก่าไม่ถูกต้อง");
+            }
             throw new UnauthorizedException("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
         }
     }
@@ -101,6 +112,26 @@ public class SupabaseAuthClient {
             return response;
         } catch (RestClientResponseException e) {
             throw new UnauthorizedException("โทเคนไม่ถูกต้อง");
+        }
+    }
+
+    public SupabaseResetPasswordResponse updatePassword(String accessToken, String newPassword) {
+        Map<String, String> body = Map.of("password", newPassword);
+        try {
+            SupabaseResetPasswordResponse response = client.put()
+                    .uri("/auth/v1/user")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                    .body(body)
+                    .retrieve()
+                    .body(SupabaseResetPasswordResponse.class);
+
+            if (response == null || response.id() == null || response.id().isBlank()) {
+                throw new BadRequestException("ไม่สามารถเปลี่ยนรหัสผ่านได้ กรุณาลองใหม่อีกครั้ง");
+            }
+            return response;
+        } catch (RestClientResponseException e) {
+            throw new BadRequestException("ไม่สามารถเปลี่ยนรหัสผ่านได้ กรุณาลองใหม่อีกครั้ง");
         }
     }
 

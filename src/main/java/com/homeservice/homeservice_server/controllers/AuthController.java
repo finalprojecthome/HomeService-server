@@ -14,10 +14,13 @@ import com.homeservice.homeservice_server.dto.auth.GetUserResponse;
 import com.homeservice.homeservice_server.dto.auth.LoginRequest;
 import com.homeservice.homeservice_server.dto.auth.LoginResponse;
 import com.homeservice.homeservice_server.dto.auth.RegisterRequest;
+import com.homeservice.homeservice_server.dto.auth.ResetPasswordRequest;
+import com.homeservice.homeservice_server.security.AuthRequired;
 import com.homeservice.homeservice_server.services.AuthService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
 @RequestMapping("/auth")
@@ -26,6 +29,7 @@ public class AuthController {
 
     private final AuthService authService;
 
+    @AuthRequired
     @GetMapping("/get-user")
     public ResponseEntity<GetUserResponse> getUser(
             @RequestHeader("Authorization") String authorization) {
@@ -46,5 +50,16 @@ public class AuthController {
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         LoginResponse response = authService.login(request);
         return ResponseEntity.ok(response);
+    }
+
+    @AuthRequired
+    @PutMapping("/reset-password")
+    public ResponseEntity<Map<String, String>> resetPassword(
+            @RequestHeader("Authorization") String authorization,
+            @Valid @RequestBody ResetPasswordRequest request) {
+
+        String accessToken = authorization.replaceFirst("(?i)^Bearer\\s+", "").trim();
+        authService.resetPassword(accessToken, request);
+        return ResponseEntity.ok(Map.of("message", "เปลี่ยนรหัสผ่านสำเร็จ"));
     }
 }

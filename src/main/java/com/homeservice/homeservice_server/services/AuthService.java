@@ -9,9 +9,11 @@ import com.homeservice.homeservice_server.dto.auth.GetUserResponse;
 import com.homeservice.homeservice_server.dto.auth.LoginRequest;
 import com.homeservice.homeservice_server.dto.auth.LoginResponse;
 import com.homeservice.homeservice_server.dto.auth.RegisterRequest;
+import com.homeservice.homeservice_server.dto.auth.ResetPasswordRequest;
 import com.homeservice.homeservice_server.entities.Technician;
 import com.homeservice.homeservice_server.entities.User;
 import com.homeservice.homeservice_server.enums.UserRole;
+import com.homeservice.homeservice_server.exception.BadRequestException;
 import com.homeservice.homeservice_server.exception.ConflictException;
 import com.homeservice.homeservice_server.exception.NotFoundException;
 import com.homeservice.homeservice_server.repositories.TechnicianRepository;
@@ -85,5 +87,15 @@ public class AuthService {
                 .imgUrl(user.getImgUrl())
                 .role(user.getRole())
                 .build();
+    }
+
+    public void resetPassword(String accessToken, ResetPasswordRequest request) {
+        if (request.getNewPassword().equals(request.getOldPassword())) {
+            throw new BadRequestException("รหัสผ่านใหม่ต้องไม่ซ้ำกับรหัสผ่านเดิม");
+        }
+
+        GetUserResponse current = getUser(accessToken);
+        var verifiedSession = supabaseAuthClient.signIn(current.getEmail(), request.getOldPassword(), true);
+        supabaseAuthClient.updatePassword(verifiedSession.accessToken(), request.getNewPassword());
     }
 }
