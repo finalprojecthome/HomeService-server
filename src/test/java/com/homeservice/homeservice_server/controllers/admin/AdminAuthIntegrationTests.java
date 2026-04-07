@@ -1,10 +1,10 @@
-package com.homeservice.homeservice_server.controllers;
+package com.homeservice.homeservice_server.controllers.admin;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.homeservice.homeservice_server.dto.AdminLoginRequest;
-import com.homeservice.homeservice_server.dto.AdminRegisterRequest;
 import com.homeservice.homeservice_server.dto.supabase.SupabaseGetUserResponse;
 import com.homeservice.homeservice_server.dto.supabase.SupabaseLoginResponse;
+import com.homeservice.homeservice_server.dto.admin.auth.AdminLoginRequest;
+import com.homeservice.homeservice_server.dto.admin.auth.AdminRegisterRequest;
 import com.homeservice.homeservice_server.repositories.UserRepository;
 import com.homeservice.homeservice_server.services.SupabaseAuthClient;
 import org.junit.jupiter.api.Test;

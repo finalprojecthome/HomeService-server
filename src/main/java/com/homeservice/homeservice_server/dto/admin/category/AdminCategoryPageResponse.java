@@ -1,4 +1,4 @@
-package com.homeservice.homeservice_server.dto;
+package com.homeservice.homeservice_server.dto.admin.category;
 
 import java.util.List;
 
