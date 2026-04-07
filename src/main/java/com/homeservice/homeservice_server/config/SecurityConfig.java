@@ -1,5 +1,6 @@
 package com.homeservice.homeservice_server.config;
 
+import com.homeservice.homeservice_server.config.admin.AdminAuthProperties;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;

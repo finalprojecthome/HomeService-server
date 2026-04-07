@@ -13,6 +13,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
 @Data
@@ -20,47 +21,32 @@ import java.time.OffsetDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "services")
-public class ServiceItem {
+@Table(name = "sub_services")
+public class SubServiceItem {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "sub_service_id", nullable = false)
+	private Integer subServiceId;
+
 	@Column(name = "service_id", nullable = false)
 	private Integer serviceId;
 
-	@Column(name = "category_id", nullable = false)
-	private Integer categoryId;
-
-	@Column(name = "name")
+	@Column(name = "name", nullable = false)
 	private String name;
 
-	@Column(name = "created_at", nullable = false)
-	private OffsetDateTime createdAt;
+	@Column(name = "unit", nullable = false)
+	private String unit;
+
+	@Column(name = "price_per_unit", nullable = false)
+	private BigDecimal pricePerUnit;
 
 	@Column(name = "updated_at", nullable = false)
 	private OffsetDateTime updatedAt;
 
-	@Column(name = "image_url")
-	private String imageUrl;
-
-	@Column(name = "sort_order")
-	private Integer sortOrder;
-
-	public ServiceItem(Integer serviceId, Integer categoryId) {
-		this.serviceId = serviceId;
-		this.categoryId = categoryId;
-	}
-
 	@PrePersist
 	void prePersist() {
-		OffsetDateTime now = OffsetDateTime.now();
-		if (createdAt == null) {
-			createdAt = now;
-		}
 		if (updatedAt == null) {
-			updatedAt = now;
-		}
-		if (sortOrder == null) {
-			sortOrder = 0;
+			updatedAt = OffsetDateTime.now();
 		}
 	}
 

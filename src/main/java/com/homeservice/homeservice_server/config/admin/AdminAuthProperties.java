@@ -1,4 +1,4 @@
-package com.homeservice.homeservice_server.config;
+package com.homeservice.homeservice_server.config.admin;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

@@ -1,14 +1,15 @@
-package com.homeservice.homeservice_server.services;
+package com.homeservice.homeservice_server.services.admin;
 
-import com.homeservice.homeservice_server.config.AdminAuthProperties;
-import com.homeservice.homeservice_server.dto.AuthResponse;
 import com.homeservice.homeservice_server.dto.supabase.SupabaseLoginResponse;
+import com.homeservice.homeservice_server.dto.admin.auth.AuthResponse;
 import com.homeservice.homeservice_server.entities.User;
 import com.homeservice.homeservice_server.enums.UserRole;
 import com.homeservice.homeservice_server.exception.ForbiddenException;
 import com.homeservice.homeservice_server.exception.UnauthorizedException;
 import com.homeservice.homeservice_server.exception.ValidationException;
+import com.homeservice.homeservice_server.config.admin.AdminAuthProperties;
 import com.homeservice.homeservice_server.repositories.UserRepository;
+import com.homeservice.homeservice_server.services.SupabaseAuthClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
