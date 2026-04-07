@@ -59,4 +59,22 @@ public class User {
     @Column(name = "role", nullable = false)
     @Builder.Default
     private UserRole role = UserRole.USER;
+
+    @Column(name = "password", columnDefinition = "text")
+    private String password;
+
+    @Column(name = "last_login_at")
+    private java.time.OffsetDateTime lastLoginAt;
+
+    @Column(name = "created_at")
+    private java.time.OffsetDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private java.time.OffsetDateTime updatedAt;
+
+    @Column(name = "address_detail", columnDefinition = "text")
+    private String addressDetail;
+
+    @Column(name = "sub_district_id")
+    private Integer subDistrictId;
 }
