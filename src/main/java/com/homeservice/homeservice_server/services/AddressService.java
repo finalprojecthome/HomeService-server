@@ -1,16 +1,21 @@
 package com.homeservice.homeservice_server.services;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
 import com.homeservice.homeservice_server.dto.address.DistrictResponse;
 import com.homeservice.homeservice_server.dto.address.ProvinceResponse;
 import com.homeservice.homeservice_server.dto.address.SubDistrictResponse;
+import com.homeservice.homeservice_server.dto.user.GetAddressResponse;
+import com.homeservice.homeservice_server.entities.Address;
 import com.homeservice.homeservice_server.entities.District;
 import com.homeservice.homeservice_server.entities.Province;
 import com.homeservice.homeservice_server.entities.SubDistrict;
 import com.homeservice.homeservice_server.exception.NotFoundException;
+import com.homeservice.homeservice_server.repositories.AddressRepository;
 import com.homeservice.homeservice_server.repositories.DistrictRepository;
 import com.homeservice.homeservice_server.repositories.ProvinceRepository;
 import com.homeservice.homeservice_server.repositories.SubDistrictRepository;
@@ -21,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AddressService {
 
+    private final AddressRepository addressRepository;
     private final ProvinceRepository provinceRepository;
     private final DistrictRepository districtRepository;
     private final SubDistrictRepository subDistrictRepository;
@@ -49,24 +55,43 @@ public class AddressService {
                 .build();
     }
 
-    public List<ProvinceResponse> getProvince() {
+    private GetAddressResponse toGetAddressResponse(Address address) {
+        SubDistrict subDistrict = address.getSubDistrict();
+        District district = subDistrict.getDistrict();
+        Province province = district.getProvince();
+        return GetAddressResponse.builder()
+                .id(address.getAddressId())
+                .addressName(address.getAddressName())
+                .addressDetail(address.getAddressDetail())
+                .province(province.getName())
+                .district(district.getName())
+                .subDistrict(subDistrict.getName())
+                .postCode(subDistrict.getPostCode())
+                .latitude(address.getLatitude())
+                .longitude(address.getLongitude())
+                .build();
+    }
+
+    public List<ProvinceResponse> getProvinces() {
         return provinceRepository.findAll()
                 .stream()
+                .sorted(Comparator.comparing(Province::getName))
                 .map(this::toProvinceResponse)
                 .toList();
     }
 
-    public List<DistrictResponse> getDistrictByProvinceId(Integer provinceId) {
+    public List<DistrictResponse> getDistrictsByProvinceId(Integer provinceId) {
         if (!provinceRepository.existsById(provinceId)) {
             throw new NotFoundException("ไม่พบจังหวัด");
         }
         return districtRepository.findByProvince_ProvinceId(provinceId)
                 .stream()
+                .sorted(Comparator.comparing(District::getName))
                 .map(this::toDistrictResponse)
                 .toList();
     }
 
-    public List<SubDistrictResponse> getSubDistrictByDistrictId(Integer districtId) {
+    public List<SubDistrictResponse> getSubDistrictsByDistrictId(Integer districtId) {
         if (!districtRepository.existsById(districtId)) {
             if (districtId >= 1100) {
                 throw new NotFoundException("ไม่พบอำเภอ");
@@ -75,7 +100,15 @@ public class AddressService {
         }
         return subDistrictRepository.findByDistrict_DistrictId(districtId)
                 .stream()
+                .sorted(Comparator.comparing(SubDistrict::getName))
                 .map(this::toSubDistrict)
+                .toList();
+    }
+
+    public List<GetAddressResponse> getAddressesByUserId(UUID userId) {
+        return addressRepository.findByUserIdWithLocation(userId)
+                .stream()
+                .map(this::toGetAddressResponse)
                 .toList();
     }
 }
