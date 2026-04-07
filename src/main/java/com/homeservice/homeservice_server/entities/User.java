@@ -43,7 +43,7 @@ public class User {
 
     @NotBlank
     @Size(min = 10, max = 10)
-    @Pattern(regexp = "^0[1-9][0-9]{8}$", message = "phone must be a Thai mobile number (10 digits starting with 0)")
+    @Pattern(regexp = "^0[1-9][0-9]{8}$", message = "รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง")
     @Column(name = "phone", nullable = false, length = 10)
     private String phone;
 
