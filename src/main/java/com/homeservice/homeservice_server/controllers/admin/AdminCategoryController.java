@@ -1,11 +1,10 @@
-package com.homeservice.homeservice_server.controllers;
+package com.homeservice.homeservice_server.controllers.admin;
 
-import com.homeservice.homeservice_server.dto.AdminCategoryCreateRequest;
-import com.homeservice.homeservice_server.dto.AdminCategoryPageResponse;
-import com.homeservice.homeservice_server.dto.AdminCategoryReorderRequest;
-import com.homeservice.homeservice_server.dto.AdminCategoryResponse;
-import com.homeservice.homeservice_server.dto.AdminCategoryUpdateRequest;
-import com.homeservice.homeservice_server.services.AdminCategoryService;
+import com.homeservice.homeservice_server.dto.admin.category.AdminCategoryCreateRequest;
+import com.homeservice.homeservice_server.dto.admin.category.AdminCategoryPageResponse;
+import com.homeservice.homeservice_server.dto.admin.category.AdminCategoryReorderRequest;
+import com.homeservice.homeservice_server.dto.admin.category.AdminCategoryResponse;
+import com.homeservice.homeservice_server.dto.admin.category.AdminCategoryUpdateRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import com.homeservice.homeservice_server.services.admin.AdminCategoryService;
 
 @RestController
 @RequestMapping("/api/admin/categories")

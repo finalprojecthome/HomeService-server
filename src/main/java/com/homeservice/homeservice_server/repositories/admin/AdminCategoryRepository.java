@@ -1,4 +1,4 @@
-package com.homeservice.homeservice_server.repositories;
+package com.homeservice.homeservice_server.repositories.admin;
 
 import com.homeservice.homeservice_server.entities.Category;
 import org.springframework.data.domain.Page;

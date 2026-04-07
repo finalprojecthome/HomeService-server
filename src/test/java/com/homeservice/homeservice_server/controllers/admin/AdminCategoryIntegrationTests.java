@@ -1,12 +1,12 @@
-package com.homeservice.homeservice_server.controllers;
+package com.homeservice.homeservice_server.controllers.admin;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.homeservice.homeservice_server.dto.AdminRegisterRequest;
+import com.homeservice.homeservice_server.dto.admin.auth.AdminRegisterRequest;
 import com.homeservice.homeservice_server.dto.supabase.SupabaseGetUserResponse;
 import com.homeservice.homeservice_server.dto.supabase.SupabaseLoginResponse;
 import com.homeservice.homeservice_server.entities.ServiceItem;
-import com.homeservice.homeservice_server.repositories.AdminCategoryRepository;
+import com.homeservice.homeservice_server.repositories.admin.AdminCategoryRepository;
 import com.homeservice.homeservice_server.repositories.ServiceItemRepository;
 import com.homeservice.homeservice_server.services.SupabaseAuthClient;
 import org.junit.jupiter.api.BeforeEach;
