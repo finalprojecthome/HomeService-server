@@ -1,5 +1,7 @@
 package com.homeservice.homeservice_server.dto.auth;
 
+import java.time.OffsetDateTime;
+
 import com.homeservice.homeservice_server.enums.UserRole;
 
 import lombok.Builder;
@@ -14,4 +16,5 @@ public class GetUserResponse {
     String email;
     String imgUrl;
     UserRole role;
+    OffsetDateTime updatedAt;
 }

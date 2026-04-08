@@ -65,7 +65,7 @@ public class UserController {
         UUID userId = (UUID) httpRequest.getAttribute(RequestUserContext.ATTR_USER_ID);
         userService.updateProfile(userId, request, profileImage);
 
-        return ResponseEntity.ok(Map.of("message", "อัปเดตโปรไฟล์สำเร็จ"));
+        return ResponseEntity.ok(Map.of("message", "แก้ไขโปรไฟล์สำเร็จ"));
     }
 
     @AuthRequired
@@ -76,7 +76,7 @@ public class UserController {
             @Valid @RequestBody AddressRequest request) {
         UUID userId = (UUID) httpRequest.getAttribute(RequestUserContext.ATTR_USER_ID);
         addressService.updateAddress(userId, addressId, request);
-        return ResponseEntity.ok(Map.of("message", "อัปเดตที่อยู่สำเร็จ"));
+        return ResponseEntity.ok(Map.of("message", "แก้ไขที่อยู่สำเร็จ"));
     }
 
     @AuthRequired
