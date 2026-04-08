@@ -11,10 +11,17 @@ public class GetAddressResponse {
     Integer id;
     String addressName;
     String addressDetail;
-    String province;
-    String district;
-    String subDistrict;
+    AreaInfo province;
+    AreaInfo district;
+    AreaInfo subDistrict;
     Integer postCode;
     BigDecimal latitude;
     BigDecimal longitude;
+
+    @Builder
+    @Value
+    public static class AreaInfo {
+        Integer id;
+        String name;
+    }
 }
