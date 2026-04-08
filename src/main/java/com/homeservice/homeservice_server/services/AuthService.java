@@ -86,6 +86,7 @@ public class AuthService {
                 .email(user.getEmail())
                 .imgUrl(user.getImgUrl())
                 .role(user.getRole())
+                .updatedAt(user.getUpdatedAt())
                 .build();
     }
 

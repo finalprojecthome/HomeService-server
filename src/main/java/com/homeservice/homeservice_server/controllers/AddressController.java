@@ -25,17 +25,17 @@ public class AddressController {
 
     @GetMapping("/provinces")
     public ResponseEntity<List<ProvinceResponse>> getProvinces() {
-        return ResponseEntity.ok(addressService.getProvince());
+        return ResponseEntity.ok(addressService.getProvinces());
     }
 
     @GetMapping("/districts/{provinceId}")
     public ResponseEntity<List<DistrictResponse>> getDistrictsByProvinceId(@PathVariable Integer provinceId) {
-        return ResponseEntity.ok(addressService.getDistrictByProvinceId(provinceId));
+        return ResponseEntity.ok(addressService.getDistrictsByProvinceId(provinceId));
     }
 
     @GetMapping("/sub-districts/{districtId}")
     public ResponseEntity<List<SubDistrictResponse>> getSubDistrictsByDistrictId(@PathVariable Integer districtId) {
-        return ResponseEntity.ok(addressService.getSubDistrictByDistrictId(districtId));
+        return ResponseEntity.ok(addressService.getSubDistrictsByDistrictId(districtId));
     }
 
 }
