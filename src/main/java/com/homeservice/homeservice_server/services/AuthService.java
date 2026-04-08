@@ -88,6 +88,11 @@ public class AuthService {
                 .role(user.getRole())
                 .updatedAt(user.getUpdatedAt())
                 .build();
+
+    }
+    public UUID getCurrentUserId(String accessToken) {
+        var supaUser = supabaseAuthClient.getUser(accessToken);
+        return UUID.fromString(supaUser.id());
     }
 
     public void resetPassword(String accessToken, ResetPasswordRequest request) {
@@ -99,4 +104,5 @@ public class AuthService {
         var verifiedSession = supabaseAuthClient.signIn(current.getEmail(), request.getOldPassword(), true);
         supabaseAuthClient.updatePassword(verifiedSession.accessToken(), request.getNewPassword());
     }
+
 }

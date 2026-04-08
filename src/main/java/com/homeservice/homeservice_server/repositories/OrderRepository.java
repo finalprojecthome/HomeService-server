@@ -2,8 +2,10 @@ package com.homeservice.homeservice_server.repositories;
 
 import com.homeservice.homeservice_server.entities.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
-import java.util.Optional;
+
+import java.util.List;
+import java.util.UUID;
 
 public interface OrderRepository extends JpaRepository<Order, String> {
-    Optional<Order> findByOrderId(String orderId);
+    List<Order> findByCustomerId(UUID customerId);
 }

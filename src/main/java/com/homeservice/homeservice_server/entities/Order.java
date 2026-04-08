@@ -8,6 +8,9 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 
 
+
+
+
 @Entity
 @Table(name = "orders")
 @Getter
@@ -18,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 public class Order {
 
     @Id
-    @Column(name = "order_id", nullable = false)
+    @Column(name = "order_id", updatable = false, nullable = false)
     private String orderId;
 
     @Column(name = "customer_id")
