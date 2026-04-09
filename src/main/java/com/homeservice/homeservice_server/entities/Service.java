@@ -8,10 +8,7 @@ import java.time.OffsetDateTime;
 import lombok.*;
 
 @Entity
-@Table(
-    name = "services",
-    indexes = @Index(name = "services_category_id_idx", columnList = "category_id")
-)
+@Table(name = "services", indexes = @Index(name = "services_category_id_idx", columnList = "category_id"))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -26,11 +23,7 @@ public class Service {
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(
-        name = "category_id",
-        nullable = false,
-        foreignKey = @ForeignKey(name = "services_category_id_fkey")
-    )
+    @JoinColumn(name = "category_id", nullable = false, foreignKey = @ForeignKey(name = "services_category_id_fkey"))
     private Category category;
 
     @NotBlank

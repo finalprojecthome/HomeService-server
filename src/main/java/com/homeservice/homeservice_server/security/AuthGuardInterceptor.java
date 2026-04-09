@@ -66,8 +66,8 @@ public class AuthGuardInterceptor implements HandlerInterceptor {
         if (hasAnnotation(handlerMethod, TechnicianOnly.class)) {
             return new RequiredAccess(UserRole.TECHNICIAN);
         }
-        if (hasAnnotation(handlerMethod, UserOnly.class)) {
-            return new RequiredAccess(UserRole.USER);
+        if (hasAnnotation(handlerMethod, CustomerOnly.class)) {
+            return new RequiredAccess(UserRole.CUSTOMER);
         }
         if (hasAnnotation(handlerMethod, AuthRequired.class)) {
             return new RequiredAccess(null);

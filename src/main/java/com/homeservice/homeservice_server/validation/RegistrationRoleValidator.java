@@ -24,6 +24,6 @@ public class RegistrationRoleValidator implements ConstraintValidator<Registrati
                     .addConstraintViolation();
             return false;
         }
-        return parsed == UserRole.USER || parsed == UserRole.TECHNICIAN;
+        return parsed == UserRole.CUSTOMER || parsed == UserRole.TECHNICIAN;
     }
 }

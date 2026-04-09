@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.homeservice.homeservice_server.dto.ServiceCatalogItemResponse;
 import com.homeservice.homeservice_server.dto.subservice.SubServiceResponse;
-import com.homeservice.homeservice_server.security.UserOnly;
+import com.homeservice.homeservice_server.security.CustomerOnly;
 import com.homeservice.homeservice_server.services.ServiceCatalogService;
 import com.homeservice.homeservice_server.services.SubServiceService;
 
@@ -25,7 +25,7 @@ public class ServiceController {
         return serviceCatalogService.getServices();
     }
 
-    @UserOnly
+    @CustomerOnly
     @GetMapping("/{serviceId}/sub-services")
     public List<SubServiceResponse> getSubServices(@PathVariable Long serviceId) {
         return subServiceService.getSubServicesByServiceId(serviceId);

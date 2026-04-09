@@ -6,9 +6,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This annotation is used to mark a method or class as user role only.
+ * This annotation is used to mark a method or class as customer role only.
  */
 @Target({ ElementType.TYPE, ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface UserOnly {
+public @interface CustomerOnly {
 }
