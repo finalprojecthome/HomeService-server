@@ -6,11 +6,6 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-
-
-
-
-
 @Entity
 @Table(name = "orders")
 @Getter
@@ -47,8 +42,6 @@ public class Order {
 
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
-
-
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     @JsonManagedReference

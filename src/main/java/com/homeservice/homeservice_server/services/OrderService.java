@@ -5,13 +5,11 @@ import com.homeservice.homeservice_server.entities.Order;
 import com.homeservice.homeservice_server.entities.OrderItem;
 import com.homeservice.homeservice_server.repositories.OrderRepository;
 import com.homeservice.homeservice_server.repositories.OrderItemRepository;
-import com.homeservice.homeservice_server.security.RequestUserContext;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.UUID;
 import java.util.List;
@@ -55,14 +53,7 @@ public class OrderService {
         return orderId;
     }
 
-    public List<Order> getOrdersByCustomerId(HttpServletRequest request) {
-
-        UUID customerId = (UUID) request.getAttribute(RequestUserContext.ATTR_USER_ID);
-
-        if (customerId == null) {
-            throw new RuntimeException("Unauthorized");
-        }
-
+    public List<Order> getOrdersByCustomerId(UUID customerId) {
         return orderRepository.findByCustomerId(customerId);
     }
 }

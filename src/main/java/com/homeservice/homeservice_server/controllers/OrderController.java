@@ -26,21 +26,15 @@ public class OrderController {
     @PostMapping
     public String createOrder(
             @RequestBody CreateOrderRequest request,
-            HttpServletRequest httpRequest
-    ) {
-
+            HttpServletRequest httpRequest) {
         UUID userId = (UUID) httpRequest.getAttribute(RequestUserContext.ATTR_USER_ID);
-
-        if (userId == null) {
-            throw new RuntimeException("Unauthorized");
-        }
-
         return orderService.createOrder(request, userId);
     }
 
     @UserOnly
     @GetMapping("/my-orders")
     public List<Order> getMyOrders(HttpServletRequest request) {
-        return orderService.getOrdersByCustomerId(request);
+        UUID userId = (UUID) request.getAttribute(RequestUserContext.ATTR_USER_ID);
+        return orderService.getOrdersByCustomerId(userId);
     }
 }

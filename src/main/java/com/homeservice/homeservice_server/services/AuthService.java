@@ -90,10 +90,6 @@ public class AuthService {
                 .build();
 
     }
-    public UUID getCurrentUserId(String accessToken) {
-        var supaUser = supabaseAuthClient.getUser(accessToken);
-        return UUID.fromString(supaUser.id());
-    }
 
     public void resetPassword(String accessToken, ResetPasswordRequest request) {
         if (request.getNewPassword().equals(request.getOldPassword())) {
