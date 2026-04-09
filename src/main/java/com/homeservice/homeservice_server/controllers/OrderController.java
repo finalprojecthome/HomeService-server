@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/orders")
@@ -25,8 +26,8 @@ public class OrderController {
     @UserOnly
     @PostMapping
     public String createOrder(
-            @RequestBody CreateOrderRequest request,
-            HttpServletRequest httpRequest) {
+            HttpServletRequest httpRequest,
+            @Valid @RequestBody CreateOrderRequest request) {
         UUID userId = (UUID) httpRequest.getAttribute(RequestUserContext.ATTR_USER_ID);
         return orderService.createOrder(request, userId);
     }

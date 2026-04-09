@@ -3,6 +3,7 @@ package com.homeservice.homeservice_server.services;
 import com.homeservice.homeservice_server.dto.order.CreateOrderRequest;
 import com.homeservice.homeservice_server.entities.Order;
 import com.homeservice.homeservice_server.entities.OrderItem;
+import com.homeservice.homeservice_server.enums.ServiceStatus;
 import com.homeservice.homeservice_server.repositories.OrderRepository;
 import com.homeservice.homeservice_server.repositories.OrderItemRepository;
 
@@ -28,8 +29,10 @@ public class OrderService {
                 .customerId(customerId)
                 .addressDetail(request.getAddressDetail())
                 .subDistrictId(request.getSubDistrictId())
+                .latitude(request.getLatitude())
+                .longitude(request.getLongitude())
                 .scheduledAt(request.getScheduledAt())
-                .status("PENDING")
+                .status(ServiceStatus.PENDING)
                 .build();
 
         Order saved = orderRepository.save(order);
