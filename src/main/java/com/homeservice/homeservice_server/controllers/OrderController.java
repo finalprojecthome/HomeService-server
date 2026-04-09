@@ -2,7 +2,7 @@ package com.homeservice.homeservice_server.controllers;
 
 import com.homeservice.homeservice_server.entities.Order;
 import com.homeservice.homeservice_server.security.RequestUserContext;
-import com.homeservice.homeservice_server.security.UserOnly;
+import com.homeservice.homeservice_server.security.CustomerOnly;
 import com.homeservice.homeservice_server.dto.order.CreateOrderRequest;
 import com.homeservice.homeservice_server.services.OrderService;
 
@@ -23,7 +23,7 @@ public class OrderController {
 
     private final OrderService orderService;
 
-    @UserOnly
+    @CustomerOnly
     @PostMapping
     public String createOrder(
             HttpServletRequest httpRequest,
@@ -32,7 +32,7 @@ public class OrderController {
         return orderService.createOrder(request, userId);
     }
 
-    @UserOnly
+    @CustomerOnly
     @GetMapping("/my-orders")
     public List<Order> getMyOrders(HttpServletRequest request) {
         UUID userId = (UUID) request.getAttribute(RequestUserContext.ATTR_USER_ID);

@@ -61,7 +61,7 @@ public class User {
     @NotNull
     @Column(name = "role", nullable = false)
     @Builder.Default
-    private UserRole role = UserRole.USER;
+    private UserRole role = UserRole.CUSTOMER;
 
     @NotNull
     @Column(name = "updated_at", nullable = false)
