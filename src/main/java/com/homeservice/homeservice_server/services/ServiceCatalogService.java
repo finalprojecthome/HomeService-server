@@ -33,7 +33,7 @@ public class ServiceCatalogService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<ServiceCatalogItemResponse> listServices() {
+	public List<ServiceCatalogItemResponse> getServices() {
 		List<ServiceItem> items = new ArrayList<>(serviceItemRepository.findAllWithCategoryAndSubServices());
 		items.sort(Comparator
 				.comparingInt(ServiceCatalogService::categorySortOrder)
@@ -65,8 +65,7 @@ public class ServiceCatalogService {
 				s.getName() != null ? s.getName() : "",
 				categoryLabel,
 				priceLabel,
-				image
-		);
+				image);
 	}
 
 	private String formatPriceRange(List<SubService> subServices) {

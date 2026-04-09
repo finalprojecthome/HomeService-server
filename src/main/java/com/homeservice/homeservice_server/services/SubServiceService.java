@@ -19,7 +19,6 @@ public class SubServiceService {
     private final SubServiceRepository subServiceRepository;
     private final ServiceRepository serviceRepository;
 
-
     private SubServiceResponse toSubServiceResponse(SubService subService) {
         return SubServiceResponse.builder()
                 .id(subService.getSubServiceId())
@@ -29,14 +28,11 @@ public class SubServiceService {
                 .build();
     }
 
-
     public List<SubServiceResponse> getSubServicesByServiceId(Long serviceId) {
-
 
         if (!serviceRepository.existsById(serviceId)) {
             throw new NotFoundException("ไม่พบบริการ");
         }
-
 
         return subServiceRepository.findByService_ServiceId(serviceId)
                 .stream()
