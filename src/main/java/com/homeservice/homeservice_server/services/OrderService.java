@@ -24,23 +24,20 @@ public class OrderService {
     @Transactional
     public String createOrder(CreateOrderRequest request, UUID customerId) {
 
-        String orderId = "AD" + System.currentTimeMillis();
-
         Order order = Order.builder()
-                .orderId(orderId)
-                .customerId(customerId) // 👈 ใช้ param ตรง ๆ
+                .customerId(customerId)
                 .addressDetail(request.getAddressDetail())
                 .subDistrictId(request.getSubDistrictId())
                 .scheduledAt(request.getScheduledAt())
                 .status("PENDING")
                 .build();
 
-        orderRepository.save(order);
+        Order saved = orderRepository.save(order);
 
         if (request.getItems() != null) {
             request.getItems().forEach(item -> {
                 OrderItem orderItem = OrderItem.builder()
-                        .order(order)
+                        .order(saved)
                         .serviceName(item.getServiceName())
                         .quantity(item.getQuantity())
                         .pricePerUnit(BigDecimal.valueOf(item.getPricePerUnit()))
@@ -50,7 +47,7 @@ public class OrderService {
             });
         }
 
-        return orderId;
+        return saved.getOrderId();
     }
 
     public List<Order> getOrdersByCustomerId(UUID customerId) {

@@ -1,10 +1,26 @@
 package com.homeservice.homeservice_server.entities;
 
-import jakarta.persistence.*;
-import lombok.*;
+import org.hibernate.annotations.Generated;
+import org.hibernate.generator.EventType;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.OffsetDateTime;
 import java.util.List;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 @Table(name = "orders")
@@ -16,7 +32,8 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 public class Order {
 
     @Id
-    @Column(name = "order_id", updatable = false, nullable = false)
+    @Generated(event = EventType.INSERT)
+    @Column(name = "order_id", updatable = false, nullable = false, insertable = false)
     private String orderId;
 
     @Column(name = "customer_id")
