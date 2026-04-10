@@ -8,7 +8,7 @@ import lombok.Value;
 @Builder
 @Value
 public class SubServiceResponse {
-    Long id;
+    Integer id;
     String name;
     String unit;
     BigDecimal pricePerUnit;

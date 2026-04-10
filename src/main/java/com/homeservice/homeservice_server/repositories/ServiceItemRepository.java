@@ -7,12 +7,24 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface ServiceItemRepository extends JpaRepository<ServiceItem, Integer> {
-	boolean existsByCategoryId(Integer categoryId);
 
-	long countByCategoryId(Integer categoryId);
+	boolean existsByCategory_CategoryId(Integer categoryId);
 
-	void deleteAllByCategoryId(Integer categoryId);
+	long countByCategory_CategoryId(Integer categoryId);
 
-	@Query("SELECT DISTINCT s FROM ServiceItem s LEFT JOIN FETCH s.category LEFT JOIN FETCH s.subServices")
+	void deleteAllByCategory_CategoryId(Integer categoryId);
+
+	// หา service ตาม categoryId
+	List<ServiceItem> findByCategory_CategoryId(Integer categoryId);
+
+	// search จากชื่อ (case-insensitive)
+	List<ServiceItem> findByNameContainingIgnoreCase(String name);
+
+	// combine filter (category + search)
+	List<ServiceItem> findByCategory_CategoryIdAndNameContainingIgnoreCase(
+			Integer categoryId,
+			String name);
+
+	@Query("SELECT DISTINCT s FROM ServiceItem s LEFT JOIN FETCH s.category")
 	List<ServiceItem> findAllWithCategoryAndSubServices();
 }

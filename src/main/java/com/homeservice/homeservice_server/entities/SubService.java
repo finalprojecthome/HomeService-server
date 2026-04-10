@@ -21,7 +21,7 @@ public class SubService {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "sub_service_id", nullable = false)
-    private Long subServiceId;
+    private Integer subServiceId;
 
     @NotNull
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
@@ -30,7 +30,7 @@ public class SubService {
         nullable = false,
         foreignKey = @ForeignKey(name = "sub_services_service_id_fkey")
     )
-    private Service service;
+    private ServiceItem serviceItem;
 
     @NotBlank
     @Size(max = 255)

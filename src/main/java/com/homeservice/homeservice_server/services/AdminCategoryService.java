@@ -26,16 +26,14 @@ import java.util.Set;
 @Service
 public class AdminCategoryService {
 	private static final int PAGE_SIZE = 10;
-	private static final Sort CATEGORY_SORT =
-			Sort.by(Sort.Order.asc("sortOrder"), Sort.Order.asc("categoryId"));
+	private static final Sort CATEGORY_SORT = Sort.by(Sort.Order.asc("sortOrder"), Sort.Order.asc("categoryId"));
 
 	private final AdminCategoryRepository adminCategoryRepository;
 	private final ServiceItemRepository serviceItemRepository;
 
 	public AdminCategoryService(
 			AdminCategoryRepository adminCategoryRepository,
-			ServiceItemRepository serviceItemRepository
-	) {
+			ServiceItemRepository serviceItemRepository) {
 		this.adminCategoryRepository = adminCategoryRepository;
 		this.serviceItemRepository = serviceItemRepository;
 	}
@@ -74,8 +72,7 @@ public class AdminCategoryService {
 				categoryPage.getTotalElements(),
 				categoryPage.getTotalPages(),
 				categoryPage.hasNext(),
-				categoryPage.hasPrevious()
-		);
+				categoryPage.hasPrevious());
 	}
 
 	@Transactional(readOnly = true)
@@ -95,13 +92,13 @@ public class AdminCategoryService {
 	@Transactional
 	public void deleteCategory(Integer categoryId, boolean force) {
 		Category category = requireCategory(categoryId);
-		boolean isInUse = serviceItemRepository.existsByCategoryId(categoryId);
+		boolean isInUse = serviceItemRepository.existsByCategory_CategoryId(categoryId);
 		if (isInUse && !force) {
 			throw new ConflictException("Category cannot be deleted because it is in use");
 		}
 
 		if (isInUse) {
-			serviceItemRepository.deleteAllByCategoryId(categoryId);
+			serviceItemRepository.deleteAllByCategory_CategoryId(categoryId);
 		}
 
 		adminCategoryRepository.delete(category);
@@ -124,7 +121,8 @@ public class AdminCategoryService {
 
 		validateReorderPayload(targetIds, orderedCategoryIds);
 
-		// Preserve the relative order of categories outside the requested reorder scope.
+		// Preserve the relative order of categories outside the requested reorder
+		// scope.
 		Set<Integer> targetIdSet = new HashSet<>(targetIds);
 		List<Integer> mergedOrder = new ArrayList<>(allIds.size());
 		int replacementIndex = 0;
@@ -190,8 +188,7 @@ public class AdminCategoryService {
 			String scope,
 			List<Integer> allIds,
 			String search,
-			Integer page
-	) {
+			Integer page) {
 		return switch (scope) {
 			case "all" -> allIds;
 			case "filtered" -> getFilteredCategoryIds(search);
@@ -205,7 +202,8 @@ public class AdminCategoryService {
 			throw new ValidationException("Search is required for filtered reorder");
 		}
 
-		return adminCategoryRepository.findByNameContainingIgnoreCaseOrderBySortOrderAscCategoryIdAsc(search.trim()).stream()
+		return adminCategoryRepository.findByNameContainingIgnoreCaseOrderBySortOrderAscCategoryIdAsc(search.trim())
+				.stream()
 				.map(Category::getCategoryId)
 				.toList();
 	}
@@ -279,8 +277,7 @@ public class AdminCategoryService {
 				category.getName(),
 				category.getSortOrder(),
 				category.getCreatedAt(),
-				category.getUpdatedAt()
-		);
+				category.getUpdatedAt());
 	}
 
 	private boolean hasText(String value) {

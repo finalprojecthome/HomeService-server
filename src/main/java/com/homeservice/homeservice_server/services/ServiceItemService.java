@@ -1,10 +1,12 @@
 package com.homeservice.homeservice_server.services;
 
-import com.homeservice.homeservice_server.dto.ServiceCatalogItemResponse;
+import com.homeservice.homeservice_server.dto.service.ServiceItemResponse;
 import com.homeservice.homeservice_server.entities.Category;
 import com.homeservice.homeservice_server.entities.ServiceItem;
 import com.homeservice.homeservice_server.entities.SubService;
 import com.homeservice.homeservice_server.repositories.ServiceItemRepository;
+import com.homeservice.homeservice_server.repositories.SubServiceRepository;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,7 +19,7 @@ import java.util.List;
 import java.util.Locale;
 
 @Service
-public class ServiceCatalogService {
+public class ServiceItemService {
 	private static final NumberFormat TH_PRICE = NumberFormat.getNumberInstance(Locale.forLanguageTag("th-TH"));
 	private static final Collator TH_COLLATOR = Collator.getInstance(Locale.forLanguageTag("th"));
 
@@ -27,16 +29,18 @@ public class ServiceCatalogService {
 	}
 
 	private final ServiceItemRepository serviceItemRepository;
+	private final SubServiceRepository subServiceRepository;
 
-	public ServiceCatalogService(ServiceItemRepository serviceItemRepository) {
+	public ServiceItemService(ServiceItemRepository serviceItemRepository, SubServiceRepository subServiceRepository) {
 		this.serviceItemRepository = serviceItemRepository;
+		this.subServiceRepository = subServiceRepository;
 	}
 
 	@Transactional(readOnly = true)
-	public List<ServiceCatalogItemResponse> getServices() {
+	public List<ServiceItemResponse> getServices() {
 		List<ServiceItem> items = new ArrayList<>(serviceItemRepository.findAllWithCategoryAndSubServices());
 		items.sort(Comparator
-				.comparingInt(ServiceCatalogService::categorySortOrder)
+				.comparingInt(ServiceItemService::categorySortOrder)
 				.thenComparing(s -> s.getName() == null ? "" : s.getName(), Comparator.nullsLast(TH_COLLATOR)));
 
 		return items.stream().map(this::toResponse).toList();
@@ -47,7 +51,7 @@ public class ServiceCatalogService {
 		return c != null && c.getSortOrder() != null ? c.getSortOrder() : 0;
 	}
 
-	private ServiceCatalogItemResponse toResponse(ServiceItem s) {
+	private ServiceItemResponse toResponse(ServiceItem s) {
 		String categoryLabel = "ไม่ระบุหมวด";
 		Category cat = s.getCategory();
 		if (cat != null && cat.getName() != null) {
@@ -57,15 +61,17 @@ public class ServiceCatalogService {
 			}
 		}
 
-		String priceLabel = formatPriceRange(s.getSubServices());
+		List<SubService> subServices = subServiceRepository.findByServiceItem_ServiceId(s.getServiceId());
+		String priceLabel = formatPriceRange(subServices);
 		String image = s.getImageUrl() != null ? s.getImageUrl().trim() : "";
 
-		return new ServiceCatalogItemResponse(
-				String.valueOf(s.getServiceId()),
-				s.getName() != null ? s.getName() : "",
-				categoryLabel,
-				priceLabel,
-				image);
+		return ServiceItemResponse.builder()
+				.id(String.valueOf(s.getServiceId()))
+				.title(s.getName() != null ? s.getName() : "")
+				.category(categoryLabel)
+				.price(priceLabel)
+				.imageSrc(image)
+				.build();
 	}
 
 	private String formatPriceRange(List<SubService> subServices) {

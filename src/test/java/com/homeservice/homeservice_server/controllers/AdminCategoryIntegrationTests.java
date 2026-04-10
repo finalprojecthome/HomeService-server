@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -78,7 +79,7 @@ class AdminCategoryIntegrationTests {
 		createCategory("บริการทั่วไป");
 
 		mockMvc.perform(get("/api/admin/categories")
-						.header(HttpHeaders.AUTHORIZATION, bearer()))
+				.header(HttpHeaders.AUTHORIZATION, bearer()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.size").value(10))
 				.andExpect(jsonPath("$.page").value(0))
@@ -87,16 +88,16 @@ class AdminCategoryIntegrationTests {
 				.andExpect(jsonPath("$.items.length()").value(10));
 
 		mockMvc.perform(get("/api/admin/categories")
-						.header(HttpHeaders.AUTHORIZATION, bearer())
-						.param("page", "1"))
+				.header(HttpHeaders.AUTHORIZATION, bearer())
+				.param("page", "1"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.items.length()").value(3))
 				.andExpect(jsonPath("$.page").value(1))
 				.andExpect(jsonPath("$.hasPrevious").value(true));
 
 		mockMvc.perform(get("/api/admin/categories")
-						.header(HttpHeaders.AUTHORIZATION, bearer())
-						.param("search", "บริการ"))
+				.header(HttpHeaders.AUTHORIZATION, bearer())
+				.param("search", "บริการ"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.totalItems").value(1))
 				.andExpect(jsonPath("$.items[0].name").value("บริการทั่วไป"));
@@ -108,26 +109,26 @@ class AdminCategoryIntegrationTests {
 		createCategory("Cleaning");
 
 		mockMvc.perform(get("/api/admin/categories/{categoryId}", firstCategoryId)
-						.header(HttpHeaders.AUTHORIZATION, bearer()))
+				.header(HttpHeaders.AUTHORIZATION, bearer()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.categoryId").value(firstCategoryId))
 				.andExpect(jsonPath("$.name").value("Plumbing"));
 
 		mockMvc.perform(put("/api/admin/categories/{categoryId}", firstCategoryId)
-						.header(HttpHeaders.AUTHORIZATION, bearer())
-						.contentType(MediaType.APPLICATION_JSON)
-						.content("""
-								{"name":"Electrical"}
-								"""))
+				.header(HttpHeaders.AUTHORIZATION, bearer())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("""
+						{"name":"Electrical"}
+						"""))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.name").value("Electrical"));
 
 		mockMvc.perform(put("/api/admin/categories/{categoryId}", firstCategoryId)
-						.header(HttpHeaders.AUTHORIZATION, bearer())
-						.contentType(MediaType.APPLICATION_JSON)
-						.content("""
-								{"name":"Cleaning"}
-								"""))
+				.header(HttpHeaders.AUTHORIZATION, bearer())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("""
+						{"name":"Cleaning"}
+						"""))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.message").value("Category name already exists"));
 	}
@@ -135,10 +136,10 @@ class AdminCategoryIntegrationTests {
 	@Test
 	void deleteBlockedWhenCategoryInUse_returns409() throws Exception {
 		Integer categoryId = createCategory("Painting");
-		serviceItemRepository.save(new ServiceItem(1, categoryId));
+		serviceItemRepository.save(newServiceItemForCategory(categoryId, "Painting Service 1"));
 
 		mockMvc.perform(delete("/api/admin/categories/{categoryId}", categoryId)
-						.header(HttpHeaders.AUTHORIZATION, bearer()))
+				.header(HttpHeaders.AUTHORIZATION, bearer()))
 				.andExpect(status().isConflict())
 				.andExpect(jsonPath("$.message").value("Category cannot be deleted because it is in use"));
 	}
@@ -148,21 +149,20 @@ class AdminCategoryIntegrationTests {
 		Integer firstCategoryId = createCategory("Plumbing");
 		Integer secondCategoryId = createCategory("Cleaning");
 		Integer thirdCategoryId = createCategory("Electrical");
-		serviceItemRepository.save(new ServiceItem(1, secondCategoryId));
-		serviceItemRepository.save(new ServiceItem(2, secondCategoryId));
+		serviceItemRepository.save(newServiceItemForCategory(secondCategoryId, "Cleaning Service 1"));
+		serviceItemRepository.save(newServiceItemForCategory(secondCategoryId, "Cleaning Service 2"));
 
 		mockMvc.perform(delete("/api/admin/categories/{categoryId}", secondCategoryId)
-						.header(HttpHeaders.AUTHORIZATION, bearer())
-						.param("force", "true"))
+				.header(HttpHeaders.AUTHORIZATION, bearer())
+				.param("force", "true"))
 				.andExpect(status().isNoContent());
 
 		org.junit.jupiter.api.Assertions.assertEquals(
 				0L,
-				serviceItemRepository.countByCategoryId(secondCategoryId)
-		);
+				serviceItemRepository.countByCategory_CategoryId(secondCategoryId));
 
 		mockMvc.perform(get("/api/admin/categories")
-						.header(HttpHeaders.AUTHORIZATION, bearer()))
+				.header(HttpHeaders.AUTHORIZATION, bearer()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.totalItems").value(2))
 				.andExpect(jsonPath("$.items[0].categoryId").value(firstCategoryId))
@@ -171,7 +171,7 @@ class AdminCategoryIntegrationTests {
 				.andExpect(jsonPath("$.items[1].sortOrder").value(2));
 
 		mockMvc.perform(get("/api/admin/categories/{categoryId}", secondCategoryId)
-						.header(HttpHeaders.AUTHORIZATION, bearer()))
+				.header(HttpHeaders.AUTHORIZATION, bearer()))
 				.andExpect(status().isNotFound());
 	}
 
@@ -180,7 +180,7 @@ class AdminCategoryIntegrationTests {
 		Integer categoryId = createCategory("Gardening");
 
 		mockMvc.perform(delete("/api/admin/categories/{categoryId}", categoryId)
-						.header(HttpHeaders.AUTHORIZATION, bearer()))
+				.header(HttpHeaders.AUTHORIZATION, bearer()))
 				.andExpect(status().isNoContent());
 	}
 
@@ -193,13 +193,13 @@ class AdminCategoryIntegrationTests {
 		reordered.add(first);
 
 		mockMvc.perform(put("/api/admin/categories/reorder")
-						.header(HttpHeaders.AUTHORIZATION, bearer())
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(new ReorderPayload("page", reordered, null, 0))))
+				.header(HttpHeaders.AUTHORIZATION, bearer())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(new ReorderPayload("page", reordered, null, 0))))
 				.andExpect(status().isNoContent());
 
 		mockMvc.perform(get("/api/admin/categories")
-						.header(HttpHeaders.AUTHORIZATION, bearer()))
+				.header(HttpHeaders.AUTHORIZATION, bearer()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.items[0].categoryId").value(reordered.get(0)))
 				.andExpect(jsonPath("$.items[9].categoryId").value(reordered.get(9)));
@@ -213,13 +213,14 @@ class AdminCategoryIntegrationTests {
 		Integer d = createCategory("Electrical");
 
 		mockMvc.perform(put("/api/admin/categories/reorder")
-						.header(HttpHeaders.AUTHORIZATION, bearer())
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(new ReorderPayload("filtered", List.of(c, a, b), "บริการ", null))))
+				.header(HttpHeaders.AUTHORIZATION, bearer())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper
+						.writeValueAsString(new ReorderPayload("filtered", List.of(c, a, b), "บริการ", null))))
 				.andExpect(status().isNoContent());
 
 		mockMvc.perform(get("/api/admin/categories")
-						.header(HttpHeaders.AUTHORIZATION, bearer()))
+				.header(HttpHeaders.AUTHORIZATION, bearer()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.items[0].categoryId").value(c))
 				.andExpect(jsonPath("$.items[1].categoryId").value(a))
@@ -232,19 +233,19 @@ class AdminCategoryIntegrationTests {
 		createCategories("Category", 3);
 
 		mockMvc.perform(put("/api/admin/categories/reorder")
-						.header(HttpHeaders.AUTHORIZATION, bearer())
-						.contentType(MediaType.APPLICATION_JSON)
-						.content("""
-								{"scope":"page","page":0,"categoryIds":[1,2]}
-								"""))
+				.header(HttpHeaders.AUTHORIZATION, bearer())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("""
+						{"scope":"page","page":0,"categoryIds":[1,2]}
+						"""))
 				.andExpect(status().isBadRequest());
 	}
 
 	private Integer createCategory(String name) throws Exception {
 		MvcResult result = mockMvc.perform(post("/api/admin/categories")
-						.header(HttpHeaders.AUTHORIZATION, bearer())
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(new NamePayload(name))))
+				.header(HttpHeaders.AUTHORIZATION, bearer())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(new NamePayload(name))))
 				.andExpect(status().isCreated())
 				.andReturn();
 
@@ -272,14 +273,13 @@ class AdminCategoryIntegrationTests {
 				.thenReturn(new SupabaseGetUserResponse(userId.toString(), email, null));
 
 		mockMvc.perform(post("/api/admin/auth/register")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(new AdminRegisterRequest(
-								"Admin",
-								uniquePhone(),
-								email,
-								"password123",
-								"test-invite"
-						))))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(new AdminRegisterRequest(
+						"Admin",
+						uniquePhone(),
+						email,
+						"password123",
+						"test-invite"))))
 				.andExpect(status().isOk());
 
 		return token;
@@ -292,6 +292,17 @@ class AdminCategoryIntegrationTests {
 	private String uniquePhone() {
 		long suffix = Math.floorMod(System.nanoTime(), 100_000_000L);
 		return String.format("09%08d", suffix);
+	}
+
+	private ServiceItem newServiceItemForCategory(Integer categoryId, String name) {
+		OffsetDateTime now = OffsetDateTime.now();
+		return ServiceItem.builder()
+				.category(adminCategoryRepository.findById(categoryId).orElseThrow())
+				.name(name)
+				.imageUrl("")
+				.createdAt(now)
+				.updatedAt(now)
+				.build();
 	}
 
 	private record NamePayload(String name) {
