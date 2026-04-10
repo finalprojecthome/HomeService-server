@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.homeservice.homeservice_server.entities.SubService;
 
-public interface SubServiceRepository extends JpaRepository<SubService, Long> {
+public interface SubServiceRepository extends JpaRepository<SubService, Integer> {
 
-    List<SubService> findByService_ServiceId(Long serviceId);
+    List<SubService> findByServiceItem_ServiceId(Integer serviceId);
 }

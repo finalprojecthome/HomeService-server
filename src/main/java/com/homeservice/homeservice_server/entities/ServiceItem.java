@@ -1,43 +1,60 @@
 package com.homeservice.homeservice_server.entities;
 
+import java.time.OffsetDateTime;
+
+import jakarta.persistence.*;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
-
-@Data
+@Entity
+@Table(name = "services", indexes = @Index(name = "services_category_id_idx", columnList = "category_id"))
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table(name = "services")
+@Builder
 public class ServiceItem {
-	@Id
-	@Column(name = "service_id", nullable = false)
-	private Integer serviceId;
 
-	@Column(name = "category_id", nullable = false)
-	private Integer categoryId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "service_id", nullable = false)
+    private Integer serviceId;
 
-	@Column(nullable = false)
-	private String name;
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "category_id", nullable = false, foreignKey = @ForeignKey(name = "services_category_id_fkey"))
+    private Category category;
 
-	@Column(name = "image_url")
-	private String imageUrl;
+    @NotBlank
+    @Size(max = 255)
+    @Column(nullable = false)
+    private String name;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "category_id", insertable = false, updatable = false)
-	private Category category;
+    @Column(name = "image_url")
+    private String imageUrl;
 
-	@OneToMany(mappedBy = "service", fetch = FetchType.LAZY)
-	private List<SubService> subServices = new ArrayList<>();
+    @NotNull
+    @Column(name = "created_at", nullable = false)
+    private OffsetDateTime createdAt;
+
+    @NotNull
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
 }
