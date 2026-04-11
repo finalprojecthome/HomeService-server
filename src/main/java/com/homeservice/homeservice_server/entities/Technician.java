@@ -57,4 +57,19 @@ public class Technician {
 
     @Column(name = "rating_avg", precision = 3, scale = 2)
     private BigDecimal ratingAvg;
+
+    @Column(name = "address_detail", columnDefinition = "text")
+    private String addressDetail;
+
+    @Column(name = "sub_district_id")
+    private Integer subDistrictId;
+
+    @Column(name = "latitude", precision = 10, scale = 8)
+    private java.math.BigDecimal latitude;
+
+    @Column(name = "longitude", precision = 11, scale = 8)
+    private java.math.BigDecimal longitude;
+
+    @Column(name = "bio", columnDefinition = "text")
+    private String bio;
 }
