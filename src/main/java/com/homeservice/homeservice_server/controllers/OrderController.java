@@ -1,5 +1,6 @@
 package com.homeservice.homeservice_server.controllers;
 
+import com.homeservice.homeservice_server.dto.order.UpdateOrderStatusRequest;
 import com.homeservice.homeservice_server.entities.Order;
 import com.homeservice.homeservice_server.security.RequestUserContext;
 import com.homeservice.homeservice_server.security.CustomerOnly;
@@ -37,5 +38,12 @@ public class OrderController {
     public List<Order> getMyOrders(HttpServletRequest request) {
         UUID userId = (UUID) request.getAttribute(RequestUserContext.ATTR_USER_ID);
         return orderService.getOrdersByCustomerId(userId);
+    }
+
+    @PatchMapping("/{orderId}/status")
+    public void updateOrderStatus(
+            @PathVariable String orderId,
+            @RequestBody UpdateOrderStatusRequest request) {
+        orderService.updateOrderStatus(orderId, request.getStatus());
     }
 }

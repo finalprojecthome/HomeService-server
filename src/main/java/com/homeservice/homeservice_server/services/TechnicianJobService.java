@@ -8,11 +8,14 @@ import com.homeservice.homeservice_server.dto.technician.UpdateTechnicianProfile
 import com.homeservice.homeservice_server.entities.Order;
 import com.homeservice.homeservice_server.entities.Technician;
 import com.homeservice.homeservice_server.entities.TechnicianService;
+import com.homeservice.homeservice_server.entities.ServiceItem;
 import com.homeservice.homeservice_server.entities.User;
 import com.homeservice.homeservice_server.enums.ServiceStatus;
+import com.homeservice.homeservice_server.enums.TechnicianJobStatus;
 import com.homeservice.homeservice_server.exception.NotFoundException;
 import com.homeservice.homeservice_server.repositories.OrderRepository;
-import com.homeservice.homeservice_server.repositories.ServiceRepository;
+import com.homeservice.homeservice_server.repositories.ServiceItemRepository;
+import com.homeservice.homeservice_server.repositories.SubDistrictRepository;
 import com.homeservice.homeservice_server.repositories.TechnicianRepository;
 import com.homeservice.homeservice_server.repositories.TechnicianServiceRepository;
 import com.homeservice.homeservice_server.repositories.UserRepository;
@@ -33,7 +36,8 @@ public class TechnicianJobService {
     private final TechnicianRepository technicianRepository;
     private final TechnicianServiceRepository technicianServiceRepository;
     private final OrderRepository orderRepository;
-    private final ServiceRepository serviceRepository;
+    private final ServiceItemRepository serviceItemRepository;
+    private final SubDistrictRepository subDistrictRepository;
     private final UserRepository userRepository;
     private final AuthService authService;
 
@@ -42,6 +46,15 @@ public class TechnicianJobService {
         GetUserResponse userResponse = authService.getUser(token);
         return technicianRepository.findByUser_UserId(UUID.fromString(userResponse.getId()))
                 .orElseThrow(() -> new NotFoundException("Technician not found for user: " + userResponse.getId()));
+    }
+
+    private TechnicianJobStatus mapToTechStatus(ServiceStatus status) {
+        if (status == null) return null;
+        return switch (status) {
+            case PENDING -> TechnicianJobStatus.ASSIGNED;
+            case IN_PROGRESS -> TechnicianJobStatus.IN_PROGRESS;
+            case COMPLETED -> TechnicianJobStatus.COMPLETED;
+        };
     }
 
     private TechnicianJobResponse mapToJobResponse(Order order) {
@@ -64,7 +77,7 @@ public class TechnicianJobService {
 
         return TechnicianJobResponse.builder()
                 .orderId(order.getOrderId())
-                .status(null) // Map logic can be added if specific tech-status is needed
+                .status(mapToTechStatus(order.getStatus()))
                 .customerName(customerName)
                 .addressDetail(order.getAddressDetail())
                 .scheduledAt(order.getScheduledAt())
@@ -73,18 +86,65 @@ public class TechnicianJobService {
                 .build();
     }
 
+    private double calculateDistance(BigDecimal lat1, BigDecimal lon1, BigDecimal lat2, BigDecimal lon2) {
+        if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) {
+            return Double.MAX_VALUE;
+        }
+
+        final int R = 6371; // Earth radius in km
+        double latDistance = Math.toRadians(lat2.doubleValue() - lat1.doubleValue());
+        double lonDistance = Math.toRadians(lon2.doubleValue() - lon1.doubleValue());
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1.doubleValue())) * Math.cos(Math.toRadians(lat2.doubleValue()))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
     public List<TechnicianJobResponse> getAvailableJobs(String authorization) {
         Technician technician = getTechnicianFromToken(authorization);
 
-        if (technician.getSubDistrictId() == null) {
+        // 1. Determine Technician's working center point
+        BigDecimal techLat = technician.getLatitude();
+        BigDecimal techLon = technician.getLongitude();
+
+        // Fallback to SubDistrict coordinates if technician hasn't pinned their location
+        if ((techLat == null || techLon == null) && technician.getSubDistrictId() != null) {
+            subDistrictRepository.findById(technician.getSubDistrictId()).ifPresent(sd -> {
+                technician.setLatitude(sd.getLatitude());
+                technician.setLongitude(sd.getLongitude());
+            });
+            techLat = technician.getLatitude();
+            techLon = technician.getLongitude();
+        }
+
+        if (techLat == null || techLon == null) {
             return Collections.emptyList();
         }
 
-        // Available jobs = PENDING status + same area + NO technician assigned
+        final BigDecimal finalTechLat = techLat;
+        final BigDecimal finalTechLon = techLon;
+
+        // 2. Get Technician's skilled service names
+        List<String> technicianSkillNames = technicianServiceRepository.findByTechnicianId(technician.getTechnicianId())
+                .stream()
+                .map(ts -> {
+                    com.homeservice.homeservice_server.entities.ServiceItem svc = serviceItemRepository.findById(ts.getServiceId()).orElse(null);
+                    return svc != null ? svc.getName() : null;
+                })
+                .filter(name -> name != null)
+                .collect(Collectors.toList());
+
+        // 3. Filter available jobs (PENDING, no tech assigned, within 7.5km, AND matches technician skills)
         List<Order> orders = orderRepository.findAll().stream()
                 .filter(o -> o.getStatus() == ServiceStatus.PENDING)
                 .filter(o -> o.getTechnicianId() == null)
-                .filter(o -> o.getSubDistrictId() != null && o.getSubDistrictId().equals(technician.getSubDistrictId()))
+                .filter(o -> o.getLatitude() != null && o.getLongitude() != null)
+                // Filter by skill: Order must have at least one item matching technician's skills
+                .filter(o -> o.getItems().stream()
+                        .anyMatch(item -> technicianSkillNames.contains(item.getServiceName())))
+                // Filter by distance
+                .filter(o -> calculateDistance(finalTechLat, finalTechLon, o.getLatitude(), o.getLongitude()) <= 7.5)
                 .collect(Collectors.toList());
 
         return orders.stream()
@@ -188,11 +248,13 @@ public class TechnicianJobService {
     }
 
     public List<TechnicianSkillResponse> getAllServices() {
-        return serviceRepository.findAll().stream()
-                .map(s -> TechnicianSkillResponse.builder()
-                        .id(s.getServiceId().intValue())
+        return serviceItemRepository.findAll().stream()
+                .map(s -> {
+                    return TechnicianSkillResponse.builder()
+                        .id(s.getServiceId())
                         .name(s.getName())
-                        .build())
+                        .build();
+                })
                 .collect(Collectors.toList());
     }
 }
