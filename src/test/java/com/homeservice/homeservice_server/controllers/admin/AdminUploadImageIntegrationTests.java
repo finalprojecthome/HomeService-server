@@ -62,7 +62,7 @@ class AdminUploadImageIntegrationTests {
 
 	@Test
 	void uploadImage_withNonAdminToken_returns403() throws Exception {
-		String userToken = createUserAndToken(UserRole.USER, "normal-upload");
+		String userToken = createUserAndToken(UserRole.CUSTOMER, "normal-upload");
 
 		mockMvc.perform(multipart("/api/admin/services/upload-image")
 						.file(new MockMultipartFile("image", "service.png", "image/png", new byte[]{1, 2, 3}))
