@@ -76,6 +76,13 @@ public class AdminCategoryService {
 	}
 
 	@Transactional(readOnly = true)
+	public List<AdminCategoryResponse> getAllCategories() {
+		return adminCategoryRepository.findAllByOrderBySortOrderAscCategoryIdAsc().stream()
+				.map(this::toResponse)
+				.toList();
+	}
+
+	@Transactional(readOnly = true)
 	public AdminCategoryResponse getCategoryById(Integer categoryId) {
 		return toResponse(requireCategory(categoryId));
 	}

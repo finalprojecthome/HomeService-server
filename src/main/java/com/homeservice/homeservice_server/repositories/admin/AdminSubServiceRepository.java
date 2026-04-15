@@ -13,4 +13,6 @@ public interface AdminSubServiceRepository extends JpaRepository<SubServiceItem,
 	void deleteAllByServiceId(Integer serviceId);
 
 	long countByServiceId(Integer serviceId);
+
+	boolean existsByServiceId(Integer serviceId);
 }

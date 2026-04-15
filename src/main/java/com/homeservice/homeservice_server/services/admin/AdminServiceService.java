@@ -7,6 +7,7 @@ import com.homeservice.homeservice_server.exception.ConflictException;
 import com.homeservice.homeservice_server.exception.NotFoundException;
 import com.homeservice.homeservice_server.exception.ValidationException;
 import com.homeservice.homeservice_server.dto.admin.service.AdminServiceCreateRequest;
+import com.homeservice.homeservice_server.dto.admin.service.AdminServiceDeleteImpactResponse;
 import com.homeservice.homeservice_server.dto.admin.service.AdminServicePageResponse;
 import com.homeservice.homeservice_server.dto.admin.service.AdminServicePatchRequest;
 import com.homeservice.homeservice_server.dto.admin.service.AdminServiceResponse;
@@ -104,10 +105,16 @@ public class AdminServiceService {
 
 	@Transactional(readOnly = true)
 	public AdminServiceResponse getServiceById(Integer serviceId) {
-		initializeMissingSortOrders();
 		ServiceItem service = requireService(serviceId);
 		List<SubServiceItem> subServices = adminSubServiceRepository.findByServiceIdOrderBySubServiceIdAsc(serviceId);
 		return toResponse(service, subServices);
+	}
+
+	@Transactional(readOnly = true)
+	public AdminServiceDeleteImpactResponse getDeleteImpact(Integer serviceId) {
+		ServiceItem service = requireService(serviceId);
+		boolean requiresForceDelete = adminSubServiceRepository.existsByServiceId(serviceId);
+		return new AdminServiceDeleteImpactResponse(service.getServiceId(), requiresForceDelete);
 	}
 
 	@Transactional
@@ -163,19 +170,20 @@ public class AdminServiceService {
 
 	@Transactional
 	public void deleteService(Integer serviceId, boolean force) {
-		initializeMissingSortOrders();
 		ServiceItem service = requireService(serviceId);
-		boolean hasSubServices = adminSubServiceRepository.countByServiceId(serviceId) > 0;
+		boolean hasSubServices = adminSubServiceRepository.existsByServiceId(serviceId);
 		if (hasSubServices && !force) {
 			throw new ConflictException("Service cannot be deleted because it has sub-services");
 		}
+
+		Integer deletedSortOrder = service.getSortOrder();
 
 		if (hasSubServices) {
 			adminSubServiceRepository.deleteAllByServiceId(serviceId);
 		}
 
 		adminServiceRepository.delete(service);
-		normalizeSortOrders();
+		shiftSortOrdersAfterDelete(deletedSortOrder);
 	}
 
 	@Transactional
@@ -562,6 +570,15 @@ public class AdminServiceService {
 			services.get(index).setSortOrder(index + 1);
 		}
 		adminServiceRepository.saveAll(services);
+	}
+
+	private void shiftSortOrdersAfterDelete(Integer deletedSortOrder) {
+		if (deletedSortOrder == null || deletedSortOrder <= 0) {
+			normalizeSortOrders();
+			return;
+		}
+
+		adminServiceRepository.decrementSortOrderGreaterThan(deletedSortOrder);
 	}
 
 	private void initializeMissingSortOrders() {

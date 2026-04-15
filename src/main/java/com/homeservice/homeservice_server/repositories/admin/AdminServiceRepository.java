@@ -4,6 +4,9 @@ import com.homeservice.homeservice_server.entities.ServiceItem;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,6 +34,12 @@ public interface AdminServiceRepository extends JpaRepository<ServiceItem, Integ
 			Integer categoryId,
 			String search
 	);
+
+	List<ServiceItem> findBySortOrderGreaterThanOrderBySortOrderAscServiceIdAsc(Integer sortOrder);
+
+	@Modifying
+	@Query("UPDATE ServiceItem s SET s.sortOrder = s.sortOrder - 1 WHERE s.sortOrder > :sortOrder")
+	void decrementSortOrderGreaterThan(@Param("sortOrder") Integer sortOrder);
 
 	boolean existsByCategoryIdAndNameIgnoreCase(Integer categoryId, String name);
 

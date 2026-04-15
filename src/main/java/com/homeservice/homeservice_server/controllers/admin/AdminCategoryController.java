@@ -42,6 +42,11 @@ public class AdminCategoryController {
 		return adminCategoryService.getCategories(search, page);
 	}
 
+	@GetMapping("/all")
+	public java.util.List<AdminCategoryResponse> listAll() {
+		return adminCategoryService.getAllCategories();
+	}
+
 	@GetMapping("/{categoryId}")
 	public AdminCategoryResponse detail(@PathVariable Integer categoryId) {
 		return adminCategoryService.getCategoryById(categoryId);
