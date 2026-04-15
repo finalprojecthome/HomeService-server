@@ -40,7 +40,6 @@ public interface AdminServiceRepository extends JpaRepository<ServiceItem, Integ
 	@Modifying
 	@Query("UPDATE ServiceItem s SET s.sortOrder = s.sortOrder - 1 WHERE s.sortOrder > :sortOrder")
 	void decrementSortOrderGreaterThan(@Param("sortOrder") Integer sortOrder);
-
 	boolean existsByCategoryIdAndNameIgnoreCase(Integer categoryId, String name);
 
 	boolean existsByCategoryIdAndNameIgnoreCaseAndServiceIdNot(Integer categoryId, String name, Integer serviceId);

@@ -8,6 +8,7 @@ import com.homeservice.homeservice_server.dto.admin.service.AdminServiceReorderR
 import com.homeservice.homeservice_server.dto.admin.service.AdminServiceResponse;
 import com.homeservice.homeservice_server.dto.admin.service.AdminServiceUpdateRequest;
 import com.homeservice.homeservice_server.dto.admin.service.AdminUploadImageResponse;
+import com.homeservice.homeservice_server.services.admin.AdminServiceService;
 import com.homeservice.homeservice_server.services.admin.AdminUploadImageService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -25,7 +26,6 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import com.homeservice.homeservice_server.services.admin.AdminServiceService;
 
 @RestController
 @RequestMapping("/api/admin/services")
@@ -43,9 +43,7 @@ public class AdminServiceController {
 
 	@PostMapping(path = "/upload-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
-	public AdminUploadImageResponse uploadImage(
-			@RequestPart("image") MultipartFile image
-	) {
+	public AdminUploadImageResponse uploadImage(@RequestPart("image") MultipartFile image) {
 		return adminUploadImageService.uploadServiceImage(image);
 	}
 

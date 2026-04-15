@@ -105,6 +105,7 @@ public class AdminServiceService {
 
 	@Transactional(readOnly = true)
 	public AdminServiceResponse getServiceById(Integer serviceId) {
+		initializeMissingSortOrders();
 		ServiceItem service = requireService(serviceId);
 		List<SubServiceItem> subServices = adminSubServiceRepository.findByServiceIdOrderBySubServiceIdAsc(serviceId);
 		return toResponse(service, subServices);
@@ -116,7 +117,6 @@ public class AdminServiceService {
 		boolean requiresForceDelete = adminSubServiceRepository.existsByServiceId(serviceId);
 		return new AdminServiceDeleteImpactResponse(service.getServiceId(), requiresForceDelete);
 	}
-
 	@Transactional
 	public AdminServiceResponse updateService(Integer serviceId, AdminServiceUpdateRequest request) {
 		ServiceItem service = requireService(serviceId);
@@ -170,6 +170,7 @@ public class AdminServiceService {
 
 	@Transactional
 	public void deleteService(Integer serviceId, boolean force) {
+		initializeMissingSortOrders();
 		ServiceItem service = requireService(serviceId);
 		boolean hasSubServices = adminSubServiceRepository.existsByServiceId(serviceId);
 		if (hasSubServices && !force) {
@@ -177,7 +178,6 @@ public class AdminServiceService {
 		}
 
 		Integer deletedSortOrder = service.getSortOrder();
-
 		if (hasSubServices) {
 			adminSubServiceRepository.deleteAllByServiceId(serviceId);
 		}
@@ -580,7 +580,6 @@ public class AdminServiceService {
 
 		adminServiceRepository.decrementSortOrderGreaterThan(deletedSortOrder);
 	}
-
 	private void initializeMissingSortOrders() {
 		List<ServiceItem> services = adminServiceRepository.findAll(SERVICE_SORT);
 		boolean hasMissingSortOrder = services.stream()
