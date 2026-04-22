@@ -56,4 +56,12 @@ public class OrderService {
     public List<Order> getOrdersByCustomerId(UUID customerId) {
         return orderRepository.findByCustomerId(customerId);
     }
+
+    @Transactional
+    public void updateOrderStatus(String orderId, ServiceStatus status) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
+        order.setStatus(status);
+        orderRepository.save(order);
+    }
 }
